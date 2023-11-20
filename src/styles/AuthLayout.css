@@ -1,0 +1,15 @@
+.fondo{
+    min-height: 100vh;
+    min-width: 100%;
+    background-image:
+    linear-gradient(rgba(255, 255, 255, 0.52), rgba(0, 0, 0, 0.73)),
+    url('../assets/images/fondo.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.logo{
+    width: 200px;
+    height: auto;
+    background-image: url('../assets/images/LogoPlataforma.png');
+}
