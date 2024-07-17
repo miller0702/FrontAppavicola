@@ -1,14 +1,14 @@
 import { ApexOptions } from 'apexcharts';
 import React, { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
-import clienteMongoAxios from '../config/clienteMongoAxios';
+import clienteMongoAxios from '../../config/clienteMongoAxios';
 
 const options = {
   chart: {
     type: 'donut',
   },
   colors: ['#10B981', '#da1111', '#ffa70b'],
-  labels: ['Ganancias', 'Egresos', 'Ingresos'],
+  labels: ['Ganancias', 'Gastos Insumos', 'Compra Alimento'],
   legend: {
     show: true,
     position: 'bottom',
@@ -54,7 +54,8 @@ const ChartThree= () => {
   const obtenerDatos = async () => {
     try {
       const {data} = await clienteMongoAxios.get('/api/sale/getTotales')
-      setDatos([(parseFloat(data.totalgeneral) - parseFloat(data.totalcompras)), parseInt(data.totalcompras),parseInt(data.totalgeneral)])
+      setDatos([(parseFloat(data.total_sales) - ( parseFloat(data.total_supplies) + parseFloat(data.total_buys))), parseInt(data.total_supplies),parseInt(data.total_buys)])
+      console.log(setDatos)
     } catch (error) {
       console.log(error)
     }

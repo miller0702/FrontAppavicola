@@ -1,65 +1,66 @@
-import { useState, useEffect, createContext } from "react";
-import { useNavigate } from "react-router-dom";
+    import { useState, useEffect, createContext } from "react";
+    import { useNavigate } from "react-router-dom";
 
-const AuthContext = createContext();
+    const AuthContext = createContext();
 
-const AuthProvider = ({children}) => {
+    const AuthProvider = ({children}) => {
 
-    const [auth, setAuth] = useState({})
-    const [usuario, setUsuario] = useState({})
-    const [pagoState, setPagoState] = useState(1)
-    const [pagoInformacion, setPagoStateInformacion] = useState(1)
-    const [cargando, setCargando] = useState(true)
+        const [auth, setAuth] = useState({})
+        const [usuario, setUsuario] = useState({})
+        const [pagoState, setPagoState] = useState(1)
+        const [pagoInformacion, setPagoStateInformacion] = useState(1)
+        const [cargando, setCargando] = useState(true)
 
-    const navigate = useNavigate()
+        const navigate = useNavigate()
 
-    useEffect(() => {
-        autenticarUsuario()
-    },[])
-    
-    const autenticarUsuario = async () => {
-        const token = localStorage.getItem('token')
-        if(!token){
+        useEffect(() => {
+            autenticarUsuario()
+        },[])
+        
+        const autenticarUsuario = async () => {
+            const token = localStorage.getItem('token')
+            if(!token){
+                setCargando(false)
+                return
+            }
+
+            setAuth({token})
+            navigate('/panel')
             setCargando(false)
-            return
+        }
+        
+        const siguientePaso = (estado) => {
+            setPagoState(estado)
         }
 
-        setAuth({token})
-        navigate('/panel')
-        setCargando(false)
-    }
-    
-    const siguientePaso = (estado) => {
-        setPagoState(estado)
+        const logout = () => {
+            localStorage.removeItem('token')
+            navigate('/')
+        }
+        return(
+            <AuthContext.Provider
+                value={{
+                    auth,
+                    setAuth,
+                    cargando,
+                    pagoState,
+                    setPagoState,
+                    siguientePaso,
+                    setPagoStateInformacion,
+                    pagoInformacion,
+                    usuario, 
+                    nombreVendedor: usuario.nombre,
+                    setUsuario,
+                    logout
+                }}
+            >
+                {children}
+            </AuthContext.Provider>
+        )
     }
 
-    const logout = () => {
-        localStorage.removeItem('token')
-        navigate('/')
+    export {
+        AuthProvider
     }
-    return(
-        <AuthContext.Provider
-            value={{
-                auth,
-                setAuth,
-                cargando,
-                pagoState,
-                setPagoState,
-                siguientePaso,
-                setPagoStateInformacion,
-                pagoInformacion,
-                usuario, 
-                setUsuario,
-                logout
-            }}
-        >
-            {children}
-        </AuthContext.Provider>
-    )
-}
 
-export {
-    AuthProvider
-}
-
-export default AuthContext;
+    export default AuthContext;

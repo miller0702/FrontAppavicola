@@ -1,21 +1,10 @@
-// import CardOne from '../../components/CardOne.tsx';
-// import CardThree from '../../components/CardThree.tsx';
-// import CardTwo from '../../components/CardTwo.tsx';
-// import ChartOne from '../../components/ChartOne.jsx';
-// import ChartThree from '../../components/ChartThree.jsx';
-// import ChartTwo from '../../components/ChartTwo.jsx';
-// import ChatCard from '../../components/ChatCard.tsx';
-// import MapOne from '../../components/MapOne.tsx';
-// import TableOne from '../../components/TableOne.tsx';
-
-import CardFour from "../components/CardFour";
-import CardOne from "../components/CardOne";
-import CardThree from "../components/CardThree";
-import CardTwo from "../components/CardTwo";
-import ChartOne from "../components/ChartOne";
-import ChartThree from "../components/ChartThree";
-import ChartTwo from "../components/ChartTwo";
-import TableOne from "../components/TableOne";
+import CardOne from "../components/cards/CardOne";
+import CardTwo from "../components/cards/CardTwo";
+import CardThree from "../components/cards/CardThree";
+import CardFour from "../components/cards/CardFour";
+import ChartOne from "../components/charts/ChartOne";
+import ChartTwo from "../components/charts/ChartTwo";
+import ChartThree from "../components/charts/ChartThree";
 
 const ECommerce = () => {
   return (

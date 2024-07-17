@@ -1,14 +1,15 @@
 import React, { useState } from 'react'
-import clienteMongoAxios from '../config/clienteMongoAxios'
+import clienteMongoAxios from '../../config/clienteMongoAxios'
 
-export default function FormAlimento() {
-    const [cantidadmacho, setCantidadmacho] = useState(0)
-    const [cantidadhembra, setCantidadhembra] = useState(0)
-    const [fecha, setFecha] = useState("")
+export default function FormProveedores() {
+
+    const [nombre, setProveedor] = useState("")
+    const [documento, setDocumento] = useState("")
+    const [telefono, setTelefono] = useState("")
 
     const registrar = async () => {
         try {
-            const {data} = await clienteMongoAxios.post('/api/food/register',{cantidadmacho, cantidadhembra, fecha})
+            const {data} = await clienteMongoAxios.post('/api/suppliers/register',{nombre: nombre, documento: documento, telefono: telefono})
             console.log(data)
         } catch (error) {
             console.log(error)
@@ -17,42 +18,42 @@ export default function FormAlimento() {
 
   return (
     <>
+    <h1 className='text-title-lg font-bold'>Registro de Proveedores</h1>
       <div>
         <label className="mb-3 block text-black dark:text-white">
-          Cantidad Macho
+          Nombre
         </label>
         <input
-          type="number"
-          placeholder="Default Input"
+          type="text"
+          placeholder="Ingrese aqui el nombre completo"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-            value={cantidadmacho}
-            onChange={e => setCantidadmacho(e.target.value)}        
+            value={nombre}
+            onChange={e => setProveedor(e.target.value)}        
         />
       </div>
       <div>
         <label className="mb-3 block text-black dark:text-white">
-          Cantidad Hembra
+          Documento
         </label>
         <input
-          type="number"
-          placeholder="Default Input"
+          type="text"
+          placeholder="Ingrese aqui el nit del proveedor"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-          value={cantidadhembra}
-          onChange={e => setCantidadhembra(e.target.value)}  
+          value={documento}
+          onChange={e => setDocumento(e.target.value)}  
         />
       </div>
       <div>
         <label className="mb-3 block text-black dark:text-white">
-            Fecha
+          Telefono
         </label>
-        <div className="relative">
-          <input
-            type="date"
-            className="custom-input-date custom-input-date-1 w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-            value={fecha}
-            onChange={e => setFecha(e.target.value)}            
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Ingrese aqui el teléfono"
+          className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+          value={telefono}
+          onChange={e => setTelefono(e.target.value)}  
+        />
       </div>
       <button
         className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1"

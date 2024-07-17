@@ -1,8 +1,8 @@
 import Breadcrumb from '../components/Breadcrumb.jsx';
-import ChartFour from '../components/ChartFour.jsx';
-import ChartOne from '../components/ChartOne.jsx';
-import ChartThree from '../components/ChartThree.jsx';
-import ChartTwo from '../components/ChartTwo.jsx';
+import ChartFour from '../components/charts/ChartFour.jsx';
+import ChartOne from '../components/charts/ChartOne.jsx';
+import ChartThree from '../components/charts/ChartThree.jsx';
+import ChartTwo from '../components/charts/ChartTwo.jsx';
 
 const Chart = () => {
   return (

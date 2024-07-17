@@ -5,6 +5,7 @@ const Chart = lazy(() => import('../pages/Chart'));
 const FormElements = lazy(() => import('../pages/FormElements'));
 const Profile = lazy(() => import('../pages/Profile'));
 const Settings = lazy(() => import('../pages/Settings'));
+const Enfermedades = lazy(() => import('../pages/Enfermedades'));
 const Tables = lazy(() => import('../pages/Tables'));
 
 const coreRoutes = [
@@ -27,6 +28,11 @@ const coreRoutes = [
     path: '/panel/tables',
     title: 'Tables',
     component: Tables,
+  },
+  {
+    path: '/panel/enfermedades',
+    title: 'Enfermedades',
+    component: Enfermedades,
   },
   {
     path: '/panel/settings',

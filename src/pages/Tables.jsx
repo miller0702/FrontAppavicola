@@ -1,15 +1,23 @@
 import { useState } from "react";
 import Breadcrumb from "../components/Breadcrumb";
-import TableMortalidad from "../components/TableMortalidad";
-import TableAlimento from "../components/TableAlimento";
-import TablesInsumos from "../components/TablesInsumos";
-import TableFacturas from "../components/TableFacturas";
+import TablesMortalidad from "../components/tables/TableMortalidad";
+import TablesAlimento from "../components/tables/TableAlimento";
+import TablesInsumos from "../components/tables/TablesInsumos";
+import TablesFacturas from "../components/tables/TableFacturas";
+import TablesClientes from "../components/tables/TableClientes";
+import TablesCompraAlimento from "../components/tables/TableCompraAlimento";
+import TablesLote from "../components/tables/TableLote";
+import TablesProveedores from "../components/tables/TableProveedores";
 
 const datos = {
-  "1": <TableMortalidad />, // Mortalidad
-  "2": <TableAlimento />, // Alimento
-  "3": <TableFacturas />, // Factura
-  "4": <TablesInsumos />, // Insumos
+  "1": <TablesLote />,
+  "2": <TablesInsumos />,
+  "3": <TablesCompraAlimento />,
+  "4": <TablesMortalidad />,
+  "5": <TablesAlimento />,
+  "6": <TablesClientes />,
+  "7": <TablesProveedores />,
+  "8": <TablesFacturas />,
 }
 
 const Tables = () => {
@@ -60,10 +68,14 @@ const Tables = () => {
               value={tipo}
               onChange={(e) => setTipo(e.target.value)}
             >
-              <option value="1">Mortalidad</option>
-              <option value="2">Alimentacion</option>
-              <option value="4">Insumos</option>
-              <option value="3">Factura</option>
+              <option value="1">Lotes</option>
+                    <option value="2">Insumos</option>
+                    <option value="3">Compra de Alimento</option>
+                    <option value="4">Mortalidad</option>
+                    <option value="5">Alimentacion</option>
+                    <option value="6">Clientes</option>
+                    <option value="7">Proveedores</option>
+                    <option value="8">Factura</option>
             </select>
             <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
               <svg

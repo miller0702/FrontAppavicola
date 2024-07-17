@@ -1,8 +1,7 @@
-import { ApexOptions } from 'apexcharts';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
-import { Await } from 'react-router-dom';
-import clienteMongoAxios from '../config/clienteMongoAxios';
+import clienteMongoAxios from '../../config/clienteMongoAxios';
+import { daysInWeek } from 'date-fns';
 
 const options = {
   legend: {
@@ -23,7 +22,6 @@ const options = {
       left: 0,
       opacity: 0.1,
     },
-
     toolbar: {
       show: false,
     },
@@ -50,10 +48,6 @@ const options = {
     width: [2, 2],
     curve: 'straight',
   },
-  // labels: {
-  //   show: false,
-  //   position: "top",
-  // },
   grid: {
     xaxis: {
       lines: {
@@ -85,37 +79,7 @@ const options = {
   },
   xaxis: {
     type: 'category',
-    categories: [
-      '01',
-      '02',
-      '03',
-      '04',
-      '05',
-      '06',
-      '07',
-      '08',
-      '09',
-      '10',
-      '11',
-      '12',
-      '13',
-      '14',
-      '15',
-      '16',
-      '17',
-      '18',
-      '19',
-      '20',
-      '21',
-      '22',
-      '23',
-      '24',
-      '25',
-      '26',
-      '28',
-      '29',
-      '30',
-    ],
+    categories: [], // Deja esto vacío inicialmente, se llenará con las fechas dinámicas
     axisBorder: {
       show: false,
     },
@@ -134,48 +98,44 @@ const options = {
   },
 };
 
-
-const ChartOne= () => {
-  const [datos, setDatos] = useState([])
-  const [machos, setMachos] = useState([])
-  const [hembras, setHembras] = useState([])
+const ChartOne = () => {
+  const [machos, setMachos] = useState([]);
+  const [hembras, setHembras] = useState([]);
+  const [fechas, setFechas] = useState([]);
 
   useEffect(() => {
-    obtenerDatos()
-  },[])
+    obtenerDatos();
+  }, []);
 
   const obtenerDatos = async () => {
     try {
-      const {data} = await clienteMongoAxios.get('/api/mortality/getMortalityByDay')
-
-      formatearDatos(data)
+      const { data } = await clienteMongoAxios.get('/api/mortality/getMortalityByDay');
+      formatearDatos(data);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-
-  }
+  };
 
   const formatearDatos = (data) => {
-    const arrayMachos = []
-    const arrayHembras = []
-    data.map(dato => {
-      arrayMachos.push(dato.totalmachos)
-      arrayHembras.push(dato.totalhembras)
-    })
-    setMachos(arrayMachos)
-    setHembras(arrayHembras)
-  }
-  const [state, setState] = useState([
-      {
-        name: 'Machos',
-        data: machos,
-      },
+    const arrayMachos = [];
+    const arrayHembras = [];
+    const arrayFechas = [];
+    
+    data.forEach((dato) => {
+      arrayMachos.push(dato.totalmachos);
+      arrayHembras.push(dato.totalhembras);
+      arrayFechas.push(formatearFecha(dato.fecha));
+    });
 
-      {
-        name: 'Hembras',
-        data: hembras,
-      },
-    ]);
+    setMachos(arrayMachos);
+    setHembras(arrayHembras);
+    setFechas(arrayFechas);
+  };
+
+  const formatearFecha = (fecha) => {
+    const options = { day: '2-digit', month: 'numeric', year: 'numeric' };
+    return new Date(fecha).toLocaleDateString('es-ES', options);
+  };
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pt-7.5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
@@ -186,8 +146,9 @@ const ChartOne= () => {
               <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-primary"></span>
             </span>
             <div className="w-full">
-              <p className="font-semibold text-primary">Total Mortalidad en Machos </p>
-              <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
+              <p className="font-semibold text-primary">Total Mortalidad en Machos</p>
+              {/* Muestra el rango de fechas dinámicamente */}
+              <p className="text-sm font-medium">{fechas.length > 0 ? `${fechas[0]} - ${fechas[fechas.length - 1]}` : ''}</p>
             </div>
           </div>
           <div className="flex min-w-47.5">
@@ -195,8 +156,9 @@ const ChartOne= () => {
               <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-secondary"></span>
             </span>
             <div className="w-full">
-              <p className="font-semibold text-secondary">Total Mortalidad en Hembras </p>
-              <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
+              <p className="font-semibold text-secondary">Total Mortalidad en Hembras</p>
+              {/* Muestra el rango de fechas dinámicamente */}
+              <p className="text-sm font-medium">{fechas.length > 0 ? `${fechas[0]} - ${fechas[fechas.length - 1]}` : ''}</p>
             </div>
           </div>
         </div>
@@ -205,7 +167,6 @@ const ChartOne= () => {
             <button className="rounded bg-white py-1 px-3 text-xs font-medium text-black shadow-card hover:bg-white hover:shadow-card dark:bg-boxdark dark:text-white dark:hover:bg-boxdark">
               Por día
             </button>
-            
           </div>
         </div>
       </div>
@@ -213,13 +174,18 @@ const ChartOne= () => {
       <div>
         <div id="chartOne" className="-ml-5">
           <ReactApexChart
-            options={options}
+            options={{
+              ...options,
+              xaxis: {
+                ...options.xaxis,
+                categories: '',
+              },
+            }}
             series={[
               {
                 name: 'Machos',
                 data: machos,
               },
-        
               {
                 name: 'Hembras',
                 data: hembras,

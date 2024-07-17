@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import clienteMongoAxios from "../config/clienteMongoAxios";
+import clienteMongoAxios from "../../config/clienteMongoAxios";
 
 export default function TableMortalidad() {
   const [datos, setDatos] = useState([]);
@@ -14,7 +14,8 @@ export default function TableMortalidad() {
   };
 
   const formatearFecha = (fecha) => {
-    return fecha.split(" ")[0];
+    const options = { day: '2-digit', month: 'long', year: 'numeric' };
+    return new Date(fecha).toLocaleDateString('es-ES', options);
   };
 
   return (
@@ -33,7 +34,7 @@ export default function TableMortalidad() {
                 Machos
               </th>
               <th className="py-4 px-4 font-medium text-black dark:text-white">
-                Actions
+              Acciones
               </th>
             </tr>
           </thead>

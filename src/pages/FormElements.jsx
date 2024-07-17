@@ -1,15 +1,23 @@
 import { useState } from "react";
 import Breadcrumb from "../components/Breadcrumb";
-import FormMortalidad from "../components/FormMortalidad";
-import FormAlimento from "../components/FormAlimento";
-import FormInsumos from "../components/FormInsumos";
-import FormFactura from "../components/FormFactura";
+import FormMortalidad from "../components/forms/FormMortalidad";
+import FormAlimento from "../components/forms/FormAlimento";
+import FormInsumos from "../components/forms/FormInsumos";
+import FormFactura from "../components/forms/FormFactura";
+import FormClientes from "../components/forms/FormClientes";
+import FormLote from "../components/forms/FormLote";
+import FormCompraAlimento from "../components/forms/FormCompraAlimento";
+import FormProveedores from "../components/forms/FormProveedores";
 
 const componente = {
-  "1": <FormMortalidad />,
-  "2": <FormAlimento />,
-  "3": <FormFactura />, // Factura
-  "4": <FormInsumos />
+  "1": <FormLote />,
+  "2": <FormInsumos />,
+  "3": <FormCompraAlimento />,
+  "4": <FormMortalidad />,
+  "5": <FormAlimento />,
+  "6": <FormClientes />,
+  "7": <FormProveedores />,
+  "8": <FormFactura />,
 }
 
 const FormElements = () => {
@@ -30,6 +38,18 @@ const FormElements = () => {
     case "4":
       setTipo("4")
       break;
+    case "5":
+      setTipo("5")
+      break;
+    case "6":
+        setTipo("6")
+        break;
+    case "7":
+        setTipo("7")
+        break;
+    case "8":
+        setTipo("8")
+        break;
   
     default:
       break;
@@ -37,7 +57,7 @@ const FormElements = () => {
 
   return (
     <>
-      <Breadcrumb pageName="FormElements" />
+      <Breadcrumb pageName="Formulario de Elementos" />
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-2">
         
@@ -85,10 +105,14 @@ const FormElements = () => {
                     value={tipo}
                     onChange={(e) => setTipo(e.target.value)}
                   >
-                    <option value="1">Mortalidad</option>
-                    <option value="2">Alimentacion</option>
-                    <option value="4">Insumos</option>
-                    <option value="3">Factura</option>
+                    <option value="1">Lotes</option>
+                    <option value="2">Insumos</option>
+                    <option value="3">Compra de Alimento</option>
+                    <option value="4">Mortalidad</option>
+                    <option value="5">Alimentacion</option>
+                    <option value="6">Clientes</option>
+                    <option value="7">Proveedores</option>
+                    <option value="8">Factura</option>
                   </select>
                   <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
                     <svg

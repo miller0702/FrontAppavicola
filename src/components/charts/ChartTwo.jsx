@@ -1,7 +1,7 @@
 import { ApexOptions } from 'apexcharts';
 import React, { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
-import clienteMongoAxios from '../config/clienteMongoAxios';
+import clienteMongoAxios from '../../config/clienteMongoAxios';
 
 const options = {
   colors: ['#3C50E0', '#80CAEE'],
@@ -45,37 +45,7 @@ const options = {
   },
 
   xaxis: {
-    categories: [
-      '01',
-      '02',
-      '03',
-      '04',
-      '05',
-      '06',
-      '07',
-      '08',
-      '09',
-      '10',
-      '11',
-      '12',
-      '13',
-      '14',
-      '15',
-      '16',
-      '17',
-      '18',
-      '19',
-      '20',
-      '21',
-      '22',
-      '23',
-      '24',
-      '25',
-      '26',
-      '28',
-      '29',
-      '30',
-    ],
+    categories: '',
   },
   legend: {
     position: 'top',
@@ -128,7 +98,7 @@ const ChartTwo= () => {
       <div className="mb-4 justify-between gap-4 sm:flex">
         <div>
           <h4 className="text-xl font-semibold text-black dark:text-white">
-            Consumo de Alimentos
+            Consumo de Purina
           </h4>
         </div>
         <div>
