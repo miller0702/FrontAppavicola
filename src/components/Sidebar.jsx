@@ -62,7 +62,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { to: "/panel/tables", icon: <FaDatabase style={{ fontSize: "20px" }}/>, label: "Datos" },
     { to: "/panel/enfermedades", icon: <FaShieldVirus style={{ fontSize: "20px" }}/>, label: "Enfermedades" },
     { to: "/panel/settings", icon: <FaCogs style={{ fontSize: "20px" }}/>, label: "Configuración" },
-    { to: "/panel/chart", icon: <FaChartArea style={{ fontSize: "20px" }}/>, label: "Estadísticas" },
     { to: "/", icon: <FaSignOutAlt style={{ fontSize: "20px" }}/>, label: "Cerrar Sesión", action: logout },
   ];
 
