@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+
 import clienteMongoAxios from '../../config/clienteMongoAxios';
 import {
   Dialog,
@@ -203,11 +204,13 @@ export default function TablesInsumos() {
       </div>
 
       {/* Modal de Edición */}
-      <Dialog open={modalIsOpen} onClose={cerrarModal}>
+      <Dialog
+       open={modalIsOpen} onClose={cerrarModal}>
         <form onSubmit={editarInsumo}>
           <DialogTitle>Editar Insumo</DialogTitle>
           <DialogContent>
-            <DialogContentText>
+            <DialogContentText
+            >
               Edita los detalles del insumo seleccionado.
             </DialogContentText>
             <FormControl fullWidth margin="normal">
