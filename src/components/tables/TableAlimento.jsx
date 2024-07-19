@@ -39,12 +39,10 @@ export default function TablesAlimento() {
         return new Date(fecha).toLocaleDateString('es-ES', options);
     };
 
-    // Función para cambiar la página
     const cambiarPagina = (numeroPagina) => {
         setPaginaActual(numeroPagina);
     };
 
-    // Función para filtrar datos por fecha
     const filtrarPorFecha = () => {
         if (fechaBusqueda === '') {
             setDatosFiltrados(datos);

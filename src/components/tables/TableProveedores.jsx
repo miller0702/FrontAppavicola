@@ -170,29 +170,29 @@ export default function TablesProveedores() {
             </div>
             <Modal open={open} onClose={handleClose}>
                 <Box sx={{ ...modalStyle }}>
-                    <h2>Editar Registro</h2>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <DatePicker
-                            label="Fecha"
-                            value={currentRecord.fecha}
-                            onChange={handleDateChange}
-                            renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
-                        />
-                    </LocalizationProvider>
+                    <h2>Editar Proveedor</h2>
                     <TextField
                         margin="normal"
                         fullWidth
-                        label="Hembras"
-                        name="cantidadhembra"
-                        value={currentRecord.cantidadhembra}
+                        label="Nombre"
+                        name="nombre"
+                        value={currentRecord.nombre}
                         onChange={handleChange}
                     />
                     <TextField
                         margin="normal"
                         fullWidth
-                        label="Machos"
-                        name="cantidadmacho"
-                        value={currentRecord.cantidadmacho}
+                        label="Documento"
+                        name="documento"
+                        value={currentRecord.documento}
+                        onChange={handleChange}
+                    />
+                    <TextField
+                        margin="normal"
+                        fullWidth
+                        label="Teléfono"
+                        name="telefono"
+                        value={currentRecord.telefono}
                         onChange={handleChange}
                     />
                     <Button onClick={handleSave} variant="contained" color="primary">
@@ -211,7 +211,7 @@ const modalStyle = {
     transform: 'translate(-50%, -50%)',
     width: 400,
     bgcolor: 'background.paper',
-    border: '2px solid #000',
+    borderRadius: 3,
     boxShadow: 24,
     p: 4,
 };
