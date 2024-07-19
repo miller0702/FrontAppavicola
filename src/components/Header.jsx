@@ -106,13 +106,7 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
                         <DarkModeSwitcher />
                         {/* Dark Mode Toggler */}
 
-                        {/* Notification Menu Area */}
-                        <DropdownNotification />
-                        {/* Notification Menu Area */}
-
-                        {/* Chat Notification Area */}
-                        <DropdownMessage />
-                        {/* Chat Notification Area */}
+                        
                     </ul>
 
                     {/* User Area */}

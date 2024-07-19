@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
-import { FaEye, FaTrash, FaDownload } from 'react-icons/fa'; // Importa los iconos necesarios
+import { FaEye, FaTrash, FaDownload, FaPencilAlt } from 'react-icons/fa'; // Importa los iconos necesarios
 
 export default function TablesAlimento() {
     const [datos, setDatos] = useState([]);
@@ -18,8 +18,13 @@ export default function TablesAlimento() {
     }, [fechaBusqueda, datos]);
 
     const getTableData = async () => {
-        const { data } = await clienteMongoAxios("/api/food/getAll");
-        setDatos(data);
+        try {
+            const { data } = await clienteMongoAxios("/api/food/getAll");
+            setDatos(data);
+            setDatosFiltrados(data);
+        } catch (error) {
+            console.error("Error fetching data: ", error);
+        }
     };
 
     const formatearFecha = (fecha) => {
@@ -84,14 +89,11 @@ export default function TablesAlimento() {
                                     </td>
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                         <div className="flex items-center space-x-3.5">
-                                            <button className="hover:text-primary">
-                                                <FaEye />
+                                            <button className="bg-primary hover:bg-primary-dark text-white rounded-full p-2">
+                                                <FaPencilAlt />
                                             </button>
-                                            <button className="hover:text-primary">
+                                            <button className="bg-red hover:bg-primary-dark text-white rounded-full p-2">
                                                 <FaTrash />
-                                            </button>
-                                            <button className="hover:text-primary">
-                                                <FaDownload />
                                             </button>
                                         </div>
                                     </td>

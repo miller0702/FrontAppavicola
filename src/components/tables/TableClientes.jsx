@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
-import { FaEye, FaTrash, FaDownload } from 'react-icons/fa'; // Importa los iconos necesarios
+import { FaEye, FaTrash, FaDownload, FaPencilAlt } from 'react-icons/fa'; // Importa los iconos necesarios
 
 export default function TablesClientes() {
     const [datos, setDatos] = useState([]);
@@ -10,12 +10,8 @@ export default function TablesClientes() {
     }, []);
 
     const getTableData = async () => {
-        const { data } = await clienteMongoAxios("/api/food/getAll");
+        const { data } = await clienteMongoAxios("/api/customers/getAll");
         setDatos(data);
-    };
-
-    const formatearFecha = (fecha) => {
-        return fecha.split(" ")[0];
     };
 
     return (
@@ -25,13 +21,13 @@ export default function TablesClientes() {
                     <thead>
                         <tr className="bg-gray-2 text-left dark:bg-meta-4">
                             <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                                Fecha
+                                Nombre
                             </th>
                             <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                                Hembras
+                                Documento
                             </th>
                             <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
-                                Machos
+                                Telefono
                             </th>
                             <th className="py-4 px-4 font-medium text-black dark:text-white">
                                 Acciones
@@ -43,29 +39,26 @@ export default function TablesClientes() {
                             <tr key={dato.id}>
                                 <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                                     <h5 className="font-medium text-black dark:text-white">
-                                        {formatearFecha(dato.fecha)}
+                                        {dato.nombre}
                                     </h5>
                                 </td>
                                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                     <p className="inline-flex rounded-full bg-meta-1 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-1">
-                                        {dato.cantidadhembra} Bultos
+                                        {dato.documento}
                                     </p>
                                 </td>
                                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                     <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
-                                        {dato.cantidadmacho} Bultos
+                                        {dato.telefono}
                                     </p>
                                 </td>
                                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                     <div className="flex items-center space-x-3.5">
-                                        <button className="hover:text-primary">
-                                            <FaEye />
+                                        <button className="bg-primary hover:bg-primary-dark text-white rounded-full p-2">
+                                            <FaPencilAlt />
                                         </button>
-                                        <button className="hover:text-primary">
+                                        <button className="bg-red hover:bg-primary-dark text-white rounded-full p-2">
                                             <FaTrash />
-                                        </button>
-                                        <button className="hover:text-primary">
-                                            <FaDownload />
                                         </button>
                                     </div>
                                 </td>

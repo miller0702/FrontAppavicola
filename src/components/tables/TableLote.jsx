@@ -23,6 +23,8 @@ export default function TablesLote() {
   const [proveedores, setProveedores] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedLote, setSelectedLote] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [datosPorPagina] = useState(7);
 
   useEffect(() => {
     getTableData();
@@ -114,6 +116,11 @@ export default function TablesLote() {
     }
   };
 
+  const cambiarPagina = (numeroPagina) => {
+    setPaginaActual(numeroPagina);
+  };
+
+
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <ToastContainer />
@@ -172,6 +179,29 @@ export default function TablesLote() {
           </tbody>
         </table>
       </div>
+
+      <div className="flex justify-between items-center mt-6">
+        <button
+          onClick={() => cambiarPagina(paginaActual - 1)}
+          disabled={paginaActual === 1}
+          className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
+        >
+          Anterior
+        </button>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-500 dark:text-meta-4">
+            Página {paginaActual} de {Math.ceil(datos.length / datosPorPagina)}
+          </span>
+        </div>
+        <button
+          onClick={() => cambiarPagina(paginaActual + 1)}
+          disabled={paginaActual === Math.ceil(datos.length / datosPorPagina)}
+          className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
+        >
+          Siguiente
+        </button>
+      </div>
+
 
       {/* Modal de Edición */}
       {modalIsOpen && selectedLote && (

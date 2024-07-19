@@ -19,25 +19,34 @@ import 'react-toastify/dist/ReactToastify.css';
 import { FaPencil } from 'react-icons/fa6';
 
 const tipoPurinaTextos = {
-    P: 'Preiniciador',
-    I: 'Iniciador',
-    Q: 'Eng. Quebrantada',
-    E: 'Engorde',
-  };
+  P: 'Preiniciador',
+  I: 'Iniciador',
+  Q: 'Eng. Quebrantada',
+  E: 'Engorde',
+};
 
 const lugarProcedenciaTextos = {
-    Ocana: 'Ocaña, Norte de Santander',
-    Bucaramanga: 'Bucaramanga, Santander',
-  };
+  Ocana: 'Ocaña, Norte de Santander',
+  Bucaramanga: 'Bucaramanga, Santander',
+};
 
 export default function TablesCompraAlimento() {
   const [datos, setDatos] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedCompra, setSelectedCompra] = useState(null);
 
+  // Paginación
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [datosPorPagina] = useState(7); // Número de registros por página
+
   useEffect(() => {
     getTableData();
   }, []);
+
+  useEffect(() => {
+    // Resetear a la primera página cuando se actualicen los datos
+    setPaginaActual(1);
+  }, [datos]);
 
   const getTableData = async () => {
     try {
@@ -65,7 +74,6 @@ export default function TablesCompraAlimento() {
     return lugarProcedenciaTextos[lugarProcedencia] || 'Desconocido';
   };
 
-
   const abrirModalEdicion = (compra) => {
     setSelectedCompra(compra);
     setModalIsOpen(true);
@@ -75,6 +83,14 @@ export default function TablesCompraAlimento() {
     setModalIsOpen(false);
     setSelectedCompra(null);
   };
+
+  // Función para cambiar la página
+  const cambiarPagina = (numeroPagina) => {
+    setPaginaActual(numeroPagina);
+  };
+
+  // Datos filtrados para paginación
+  const datosFiltrados = datos.slice((paginaActual - 1) * datosPorPagina, paginaActual * datosPorPagina);
 
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
@@ -110,7 +126,7 @@ export default function TablesCompraAlimento() {
             </tr>
           </thead>
           <tbody>
-            {datos.map((dato) => (
+            {datosFiltrados.map((dato) => (
               <tr key={dato.id}>
                 <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                   <p className="font-medium text-black dark:text-white">
@@ -149,8 +165,8 @@ export default function TablesCompraAlimento() {
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                   <div className="flex items-center space-x-3.5">
-                  <button className="bg-meta-5 hover:bg-primary-dark text-white rounded-full p-2" onClick={() => {}}>
-                      <FaEye/>
+                    <button className="bg-meta-5 hover:bg-primary-dark text-white rounded-full p-2" onClick={() => {}}>
+                      <FaEye />
                     </button>
                     <button className="bg-primary hover:bg-primary-dark text-white rounded-full p-2" onClick={() => abrirModalEdicion(dato)}>
                       <FaPencil />
@@ -164,6 +180,29 @@ export default function TablesCompraAlimento() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Controles de Paginación */}
+      <div className="flex justify-between items-center mt-6">
+        <button
+          onClick={() => cambiarPagina(paginaActual - 1)}
+          disabled={paginaActual === 1}
+          className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
+        >
+          Anterior
+        </button>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-500 dark:text-meta-4">
+            Página {paginaActual} de {Math.ceil(datos.length / datosPorPagina)}
+          </span>
+        </div>
+        <button
+          onClick={() => cambiarPagina(paginaActual + 1)}
+          disabled={paginaActual === Math.ceil(datos.length / datosPorPagina)}
+          className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
+        >
+          Siguiente
+        </button>
       </div>
 
       {/* Modal de Edición */}

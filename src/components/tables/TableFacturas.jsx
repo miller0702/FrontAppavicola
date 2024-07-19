@@ -7,11 +7,20 @@ export default function TablesFacturas() {
     const [clientes, setClientes] = useState([]);
     const [usuarios, setUsuarios] = useState([]);
 
+    // Estado de paginación
+    const [paginaActual, setPaginaActual] = useState(1);
+    const [datosPorPagina] = useState(7); // Número de registros por página
+
     useEffect(() => {
         getTableData();
         fetchClientes();
         fetchUsuarios();
     }, []);
+
+    useEffect(() => {
+        // Resetear a la primera página cuando se actualicen los datos
+        setPaginaActual(1);
+    }, [datos]);
 
     const getTableData = async () => {
         try {
@@ -36,7 +45,7 @@ export default function TablesFacturas() {
             const response = await clienteMongoAxios.get('/api/users/getAll');
             setUsuarios(response.data);
         } catch (error) {
-            console.error('Error al obtener la lista de usuaurios', error);
+            console.error('Error al obtener la lista de usuarios', error);
         }
     };
 
@@ -49,7 +58,6 @@ export default function TablesFacturas() {
         const usuario = usuarios.find((prov) => prov.id === usuarioId);
         return usuario ? usuario.name : 'Desconocido';
     };
-
 
     const obtenerNombreCliente = (clienteId) => {
         const cliente = clientes.find((prov) => prov.id === clienteId);
@@ -64,6 +72,14 @@ export default function TablesFacturas() {
     const formatearPrecio = (precio) => {
         return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(precio);
     };
+
+    // Función para cambiar la página
+    const cambiarPagina = (numeroPagina) => {
+        setPaginaActual(numeroPagina);
+    };
+
+    // Datos filtrados para paginación
+    const datosFiltrados = datos.slice((paginaActual - 1) * datosPorPagina, paginaActual * datosPorPagina);
 
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
@@ -101,7 +117,7 @@ export default function TablesFacturas() {
                         </tr>
                     </thead>
                     <tbody>
-                        {datos.map((dato) => (
+                        {datosFiltrados.map((dato) => (
                             <tr key={dato.id}>
                                 <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                                     <h5 className="font-medium text-black dark:text-white">
@@ -143,7 +159,6 @@ export default function TablesFacturas() {
                                         {formatearPrecio((dato.canastas_llenas - dato.canastas_vacias) * dato.preciokilo)}
                                     </p>
                                 </td>
-
                                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                     <div className="flex items-center space-x-3.5">
                                         <button className="bg-meta-5 hover:bg-primary-dark text-white rounded-full p-2">
@@ -164,6 +179,29 @@ export default function TablesFacturas() {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Controles de Paginación */}
+            <div className="flex justify-between items-center mt-6">
+                <button
+                    onClick={() => cambiarPagina(paginaActual - 1)}
+                    disabled={paginaActual === 1}
+                    className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
+                >
+                    Anterior
+                </button>
+                <div className="flex items-center space-x-2">
+                    <span>Página {paginaActual}</span>
+                    <span>/</span>
+                    <span>{Math.ceil(datos.length / datosPorPagina)}</span>
+                </div>
+                <button
+                    onClick={() => cambiarPagina(paginaActual + 1)}
+                    disabled={paginaActual === Math.ceil(datos.length / datosPorPagina)}
+                    className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
+                >
+                    Siguiente
+                </button>
             </div>
         </div>
     );

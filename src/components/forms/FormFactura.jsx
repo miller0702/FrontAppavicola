@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
 import { generarNumeroAleatorio } from '../../util/herreamientas';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
-import { FaCalendar, FaPerson, FaUser } from 'react-icons/fa6';
+import { Button, TextField } from '@mui/material';
+import { FaCalendar, FaUser, FaPlus, FaTrash } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 
 export default function FormFactura() {
-
-  const { usuario } = useAuth()
+  const { usuario } = useAuth();
   const [clientes, setClientes] = useState([]);
   const [selectedClienteId, setSelectedClienteId] = useState('');
   const [lotes, setLotes] = useState([]);
   const [selectedLoteId, setSelectedLoteId] = useState('');
-  const { name, _id } = usuario[0]
+  const { name, _id } = usuario[0];
   const [vendedorId, setVendedorId] = useState(_id || '');
   const [vendedorNombre, setVendedorNombre] = useState(name || '');
   const [cantidadAves, setCantidadAves] = useState(0);
@@ -20,20 +19,17 @@ export default function FormFactura() {
   const [canastasLlenas, setCanastasLlenas] = useState([]);
   const [precioKilo, setPrecioKilo] = useState(0);
   const [fecha, setFecha] = useState('');
-  const [inputsCanastas, setInputsCanastas] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [tipoCanasta, setTipoCanasta] = useState('');
-  const [nuevaCanasta, setNuevaCanasta] = useState('');
+  const [nuevaCanastaVacia, setNuevaCanastaVacia] = useState(''); // Estado separado para canastas vacías
+  const [nuevaCanastaLlena, setNuevaCanastaLlena] = useState(''); // Estado separado para canastas llenas
   const [totalCanastasVacias, setTotalCanastasVacias] = useState(0);
   const [totalCanastasLlenas, setTotalCanastasLlenas] = useState(0);
-  const [tempStorage, setTempStorage] = useState([]);
   const [valorFactura, setValorFactura] = useState(0);
 
   useEffect(() => {
-    const totalVacias = canastasVacias.reduce((total, canasta) => total + parseFloat(canasta.valor), 0);
+    const totalVacias = canastasVacias.reduce((total, canasta) => total + parseFloat(canasta), 0);
     setTotalCanastasVacias(totalVacias);
 
-    const totalLlenas = canastasLlenas.reduce((total, canasta) => total + parseFloat(canasta.valor), 0);
+    const totalLlenas = canastasLlenas.reduce((total, canasta) => total + parseFloat(canasta), 0);
     setTotalCanastasLlenas(totalLlenas);
   }, [canastasVacias, canastasLlenas]);
 
@@ -42,59 +38,42 @@ export default function FormFactura() {
     setValorFactura(valor);
   }, [precioKilo, totalCanastasLlenas, totalCanastasVacias]);
 
-  useEffect(() => {
-    if (inputsCanastas.length === 0) {
-      setTempStorage([]);
-    }
-  }, [inputsCanastas]);
-
-  const handleOpenModal = (tipo) => {
-    setTipoCanasta(tipo);
-    setModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setNuevaCanasta('');
-    setInputsCanastas([]);
-  };
-
-  const addCanasta = () => {
-    if (nuevaCanasta.trim() !== '') {
-      const nuevaCanastaValor = parseFloat(nuevaCanasta);
-      if (!isNaN(nuevaCanastaValor)) {
-        if (tipoCanasta === 'vacia') {
+  const addCanasta = (tipo) => {
+    if (tipo === 'vacia') {
+      if (nuevaCanastaVacia.trim() !== '') {
+        const nuevaCanastaValor = parseFloat(nuevaCanastaVacia);
+        if (!isNaN(nuevaCanastaValor)) {
           setCanastasVacias([...canastasVacias, nuevaCanastaValor]);
-        } else if (tipoCanasta === 'llena') {
-          setCanastasLlenas([...canastasLlenas, nuevaCanastaValor]);
+          setNuevaCanastaVacia('');
         }
-        setInputsCanastas([...inputsCanastas, nuevaCanastaValor]);
-        setNuevaCanasta('');
+      }
+    } else if (tipo === 'llena') {
+      if (nuevaCanastaLlena.trim() !== '') {
+        const nuevaCanastaValor = parseFloat(nuevaCanastaLlena);
+        if (!isNaN(nuevaCanastaValor)) {
+          setCanastasLlenas([...canastasLlenas, nuevaCanastaValor]);
+          setNuevaCanastaLlena('');
+        }
       }
     }
   };
 
   const handleInputChange = (index, value, tipo) => {
-    const newInputs = [...inputsCanastas];
-    newInputs[index] = parseFloat(value);
-    setInputsCanastas(newInputs);
-
-    if (tipo === 'vacia') {
-      const newCanastasVacias = [...canastasVacias];
-      newCanastasVacias[index] = parseFloat(value);
-      setCanastasVacias(newCanastasVacias);
-    } else if (tipo === 'llena') {
-      const newCanastasLlenas = [...canastasLlenas];
-      newCanastasLlenas[index] = parseFloat(value);
-      setCanastasLlenas(newCanastasLlenas);
+    const newValue = parseFloat(value);
+    if (!isNaN(newValue)) {
+      if (tipo === 'vacia') {
+        const newCanastasVacias = [...canastasVacias];
+        newCanastasVacias[index] = newValue;
+        setCanastasVacias(newCanastasVacias);
+      } else if (tipo === 'llena') {
+        const newCanastasLlenas = [...canastasLlenas];
+        newCanastasLlenas[index] = newValue;
+        setCanastasLlenas(newCanastasLlenas);
+      }
     }
   };
 
   const handleRemoveCanasta = (index, tipo) => {
-    const newInputs = [...inputsCanastas];
-    newInputs.splice(index, 1);
-    setInputsCanastas(newInputs);
-
     if (tipo === 'vacia') {
       const newCanastasVacias = [...canastasVacias];
       newCanastasVacias.splice(index, 1);
@@ -106,55 +85,6 @@ export default function FormFactura() {
     }
   };
 
-  const handleFinish = () => {
-    setInputsCanastas([]);
-    handleCloseModal();
-  };
-
-  useEffect(() => {
-    const fetchClientes = async () => {
-      try {
-        const response = await clienteMongoAxios.get('/api/customers/getAll');
-        setClientes(response.data);
-      } catch (error) {
-        console.error('Error al obtener la lista de clientes', error);
-        toast.error('Error al obtener la lista de clientes', {
-          position: toast.POSITION.TOP_CENTER,
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          className: 'bg-white dark:bg-boxdark text-black dark:text-white'
-        });
-      }
-    };
-    fetchClientes();
-  }, []);
-
-  useEffect(() => {
-    const fetchLotes = async () => {
-      try {
-        const response = await clienteMongoAxios.get('/api/lote/getAll');
-        setLotes(response.data);
-      } catch (error) {
-        console.error('Error al obtener la lista de clientes', error);
-        toast.error('Error al obtener la lista de clientes', {
-          position: toast.POSITION.TOP_CENTER,
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          className: 'bg-white dark:bg-boxdark text-black dark:text-white'
-        });
-      }
-    };
-    fetchLotes();
-  }, []);
-
   const registrar = async () => {
     const numeroFactura = await generarNumeroAleatorio();
     try {
@@ -165,8 +95,8 @@ export default function FormFactura() {
         cliente_id: selectedClienteId,
         user_id: vendedorId,
         cantidadaves: cantidadAves,
-        canastas_vacias: canastasVacias.map((canasta) => parseFloat(canasta.valor)),
-        canastas_llenas: canastasLlenas.map((canasta) => parseFloat(canasta.valor)),
+        canastas_vacias: canastasVacias.map((canasta) => parseFloat(canasta)),
+        canastas_llenas: canastasLlenas.map((canasta) => parseFloat(canasta)),
         preciokilo: precioKilo,
         fecha: fecha,
         numerofactura: numeroFactura,
@@ -180,11 +110,38 @@ export default function FormFactura() {
 
       setCanastasVacias([]);
       setCanastasLlenas([]);
-      setTempStorage([]);
 
     } catch (error) {
       console.log(error);
     }
+  };
+
+  useEffect(() => {
+    const fetchClientes = async () => {
+      try {
+        const response = await clienteMongoAxios.get('/api/customers/getAll');
+        setClientes(response.data);
+      } catch (error) {
+        console.error('Error al obtener la lista de clientes', error);
+      }
+    };
+    fetchClientes();
+  }, []);
+
+  useEffect(() => {
+    const fetchLotes = async () => {
+      try {
+        const response = await clienteMongoAxios.get('/api/lote/getAll');
+        setLotes(response.data);
+      } catch (error) {
+        console.error('Error al obtener la lista de lotes', error);
+      }
+    };
+    fetchLotes();
+  }, []);
+
+  const formatearPrecio = (precio) => {
+    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(precio);
   };
 
   return (
@@ -233,160 +190,101 @@ export default function FormFactura() {
         </select>
       </div>
       <div>
-        <label className="mb-3 block text-black dark:text-white">Vendedor</label>
+        <label className="mb-3 block text-black dark:text-white"><FaUser className="inline-block mr-2" /> Vendedor</label>
         <input
+          className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           type="text"
-          className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={vendedorNombre}
-          readOnly
+          disabled
         />
       </div>
-      <div>
-        <label className="mb-3 block text-black dark:text-white">Cantidad Aves</label>
-        <input
-          type="number"
-          className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-          value={cantidadAves}
-          onChange={(e) => setCantidadAves(e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="mb-3 block text-black dark:text-white">Canastas Vacías</label>
+
+      <div className="mb-4">
+        <label className="mb-3 block text-black dark:text-white"><FaCalendar className="inline-block mr-2" /> Canastas Vacías</label>
         {canastasVacias.map((canasta, index) => (
-          <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+          <div key={index} className="flex items-center">
             <TextField
-              value={canasta.valor}
+              type="number"
+              value={canasta}
               onChange={(e) => handleInputChange(index, e.target.value, 'vacia')}
-              fullWidth
               variant="outlined"
-              style={{ marginRight: '10px' }}
+              size="small"
+              className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent mt-3 py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
             />
-            <button
-              className="flex justify-center rounded bg-red py-2 px-6 font-medium text-gray hover:shadow-1"
-              onClick={() => handleRemoveCanasta(index, 'vacia')}
-              style={{ marginLeft: '10px' }}
-            >
-              -
+            <button onClick={() => handleRemoveCanasta(index, 'vacia')} className='rounded py-3 px-6 font-medium text-gray bg-red'>
+              <FaTrash />
             </button>
           </div>
         ))}
-        <button
-          className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1"
-          onClick={() => handleOpenModal('vacia')}
-        >
-          Agregar Canastas Vacías
-        </button>
+        <div className="flex items-center mt-2">
+          <TextField
+            type="number"
+            value={nuevaCanastaVacia}
+            onChange={(e) => setNuevaCanastaVacia(e.target.value)}
+            variant="outlined"
+            size="small"
+            className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+          />
+          <button onClick={() => addCanasta('vacia')}  className='rounded py-3 px-6 font-medium text-gray bg-primary'>
+            <FaPlus />
+          </button>
+        </div>
       </div>
-      <div>
-        <label className="mb-3 block text-black dark:text-white">Canastas Llenas</label>
+
+      <div className="mb-4">
+        <label className="mb-3 block text-black dark:text-white"><FaCalendar className="inline-block mr-2" /> Canastas Llenas</label>
         {canastasLlenas.map((canasta, index) => (
-          <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+          <div key={index} className="flex items-center">
             <TextField
-              value={canasta.valor}
+              type="number"
+              value={canasta}
               onChange={(e) => handleInputChange(index, e.target.value, 'llena')}
-              fullWidth
               variant="outlined"
-              style={{ marginRight: '10px' }}
+              size="small"
+              className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent mb-3 py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
             />
-            <button
-              className="flex justify-center rounded bg-red py-2 px-6 font-medium text-gray hover:shadow-1"
-              onClick={() => handleRemoveCanasta(index, 'llena')}
-              style={{ marginLeft: '10px' }}
-            >
-              -
+            <button onClick={() => handleRemoveCanasta(index, 'llena')} className='rounded py-3 px-6 font-medium text-gray bg-red'>
+              <FaTrash />
             </button>
           </div>
         ))}
-        <button
-          variant="contained"
-          color="primary"
-          onClick={() => handleOpenModal('llena')}
-          className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1"
-        >
-          Agregar Canastas Llenas
-        </button>
+        <div className="flex items-center mt-2">
+          <TextField
+            type="number"
+            value={nuevaCanastaLlena}
+            onChange={(e) => setNuevaCanastaLlena(e.target.value)}
+            variant="outlined"
+            size="small"
+            className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+          />
+          <button onClick={() => addCanasta('llena')}  className='rounded py-3 px-6 font-medium text-gray bg-primary'>
+            <FaPlus />
+          </button>
+        </div>
       </div>
-      <div>
-        <label className="mb-3 block text-black dark:text-white">Precio Kilo</label>
+
+      <div className="mb-4">
+        <label className="mb-3 block text-black dark:text-white"><FaCalendar className="inline-block mr-2" /> Precio por Kilo</label>
         <input
           type="number"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={precioKilo}
-          onChange={(e) => setPrecioKilo(e.target.value)}
+          onChange={(e) => setPrecioKilo(parseFloat(e.target.value))}
         />
       </div>
-      <div>
-        <label className="mb-3 block text-black dark:text-white">Total Kilos</label>
-        <input
-          type="text"
-          className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-          value={totalCanastasLlenas - totalCanastasVacias}
-          readOnly
-        />
-      </div>
-      <div>
-        <label className="mb-3 block text-black dark:text-white">Valor de Factura</label>
-        <input
-          type="number"
-          className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-          value={valorFactura}
-          disabled
-        />
-      </div>
-      <button
-        className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1"
-        onClick={() => registrar()}
-      >
-        Generar
-      </button>
 
-      <Dialog open={modalOpen} onClose={handleCloseModal}>
-        <DialogTitle>
-          Agregar Canasta {tipoCanasta === 'vacia' ? 'Vacía' : 'Llena'}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {`Canasta ${tipoCanasta === 'vacia' ? 'Vacía' : 'Llena'}`}
-          </DialogContentText>
-          {inputsCanastas.map((canasta, index) => (
-            <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-              <TextField
-                value={canasta.valor}
-                onChange={(e) => handleInputChange(index, e.target.value)}
-                fullWidth
-                variant="outlined"
-                style={{ marginRight: '10px' }}
-              />
-              <button
-                className="flex justify-center rounded bg-red py-2 px-6 font-medium text-gray hover:shadow-1"
-                onClick={() => handleRemoveCanasta(index)}
-                style={{ marginLeft: '10px' }}
-              >
-                -
-              </button>
-            </div>
-          ))}
-          <TextField
-            value={nuevaCanasta}
-            onChange={(e) => setNuevaCanasta(e.target.value)}
-            fullWidth
-            variant="outlined"
-            label={`Nueva Canasta ${tipoCanasta === 'vacia' ? 'Vacía' : 'Llena'}`}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseModal} color="primary">
-            Cancelar
-          </Button>
-          <Button onClick={addCanasta} color="primary">
-            Agregar
-          </Button>
-          <Button onClick={handleFinish} color="primary">
-            Terminar
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <div className="flex justify-between mb-5">
+        <div>
+          <h4 className="text-title-sm font-bold">Total Kilos</h4>
+          <h1 className="text-title-lg font-bold">{(totalCanastasLlenas - totalCanastasVacias).toFixed(1)} KG</h1>
+        </div>
+        <div>
+          <h2 className="text-title-sm font-bold">Valor de la Factura</h2>
+          <p className="text-title-lg font-bold">{formatearPrecio(valorFactura.toFixed(0))}</p>
+        </div>
+      </div>
+
+      <button onClick={registrar}  className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1">Registrar</button>
     </>
   );
 }
-
