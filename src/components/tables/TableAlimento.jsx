@@ -56,7 +56,7 @@ export default function TablesAlimento() {
 
     const handleDelete = async (id) => {
         try {
-            await clienteMongoAxios.delete(`/api/mortality/delete/${id}`);
+            await clienteMongoAxios.delete(`/api/food/delete/${id}`);
             setDatos(datos.filter(dato => dato.id !== id));
             setDatosFiltrados(datosFiltrados.filter(dato => dato.id !== id));
             toast.success('Registro eliminado con éxito');
@@ -83,10 +83,10 @@ export default function TablesAlimento() {
     const handleDateChange = (newDate) => {
         setCurrentRecord({ ...currentRecord, fecha: newDate });
     };
-    
+
     const handleSave = async () => {
         try {
-            await clienteMongoAxios.put(`/api/mortality/update/${currentRecord.id}`, currentRecord);
+            await clienteMongoAxios.put(`/api/food/update/${currentRecord.id}`, currentRecord);
             getTableData();
             handleClose();
             toast.success('Registro actualizado con éxito');
