@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
-import { FaEye, FaTrash, FaDownload, FaPencilAlt } from 'react-icons/fa'; // Importa los iconos necesarios
+import { FaEye, FaTrash, FaDownload, FaPencilAlt, FaSortUp, FaSortDown } from 'react-icons/fa'; // Importa los iconos necesarios
 import { Box, Button, Modal, TextField } from '@mui/material';
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
@@ -15,6 +15,7 @@ export default function TablesAlimento() {
     const [datosFiltrados, setDatosFiltrados] = useState([]);
     const [open, setOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState({});
+    const [sortOrder, setSortOrder] = useState('desc');
 
     useEffect(() => {
         getTableData();
@@ -22,7 +23,7 @@ export default function TablesAlimento() {
 
     useEffect(() => {
         filtrarPorFecha();
-    }, [fechaBusqueda, datos]);
+    }, [fechaBusqueda, datos, sortOrder]);
 
     const getTableData = async () => {
         try {
@@ -44,12 +45,11 @@ export default function TablesAlimento() {
     };
 
     const filtrarPorFecha = () => {
-        if (fechaBusqueda === '') {
-            setDatosFiltrados(datos);
-        } else {
-            const filteredData = datos.filter(dato => formatearFecha(dato.fecha) === fechaBusqueda);
-            setDatosFiltrados(filteredData);
-        }
+        let datosFiltrados = fechaBusqueda === '' ? datos : datos.filter(dato => formatearFecha(dato.fecha) === fechaBusqueda);
+        datosFiltrados = datosFiltrados.sort((a, b) => {
+            return sortOrder === 'asc' ? new Date(a.fecha) - new Date(b.fecha) : new Date(b.fecha) - new Date(a.fecha);
+        });
+        setDatosFiltrados(datosFiltrados);
     };
 
     const handleDelete = async (id) => {
@@ -94,6 +94,10 @@ export default function TablesAlimento() {
         }
     };
 
+    const toggleSortOrder = () => {
+        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    };
+
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
             <ToastContainer />
@@ -103,6 +107,9 @@ export default function TablesAlimento() {
                         <tr className="bg-gray-2 text-left dark:bg-meta-4">
                             <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
                                 Fecha
+                                <button onClick={toggleSortOrder} className="ml-2">
+                                    {sortOrder === 'asc' ? <FaSortUp /> : <FaSortDown />}
+                                </button>
                             </th>
                             <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                                 Hembras
