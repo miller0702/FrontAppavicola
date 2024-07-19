@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
 import { generarNumeroAleatorio } from '../../util/herreamientas';
 import { Button, TextField } from '@mui/material';
-import { FaCalendar, FaUser, FaPlus, FaTrash } from 'react-icons/fa';
+import { FaCalendar, FaUser, FaPlus, FaTrash, FaSortNumericDown, FaBox, FaDollarSign, FaThList } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function FormFactura() {
   const { usuario } = useAuth();
@@ -19,8 +21,8 @@ export default function FormFactura() {
   const [canastasLlenas, setCanastasLlenas] = useState([]);
   const [precioKilo, setPrecioKilo] = useState(0);
   const [fecha, setFecha] = useState('');
-  const [nuevaCanastaVacia, setNuevaCanastaVacia] = useState(''); // Estado separado para canastas vacías
-  const [nuevaCanastaLlena, setNuevaCanastaLlena] = useState(''); // Estado separado para canastas llenas
+  const [nuevaCanastaVacia, setNuevaCanastaVacia] = useState('');
+  const [nuevaCanastaLlena, setNuevaCanastaLlena] = useState('');
   const [totalCanastasVacias, setTotalCanastasVacias] = useState(0);
   const [totalCanastasLlenas, setTotalCanastasLlenas] = useState(0);
   const [valorFactura, setValorFactura] = useState(0);
@@ -108,11 +110,32 @@ export default function FormFactura() {
       console.log(data);
       console.log(data2);
 
+      toast.success('Factura Registrada con Éxito', {
+        position: toast.POSITION.TOP_CENTER,
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        className: 'bg-white dark:bg-boxdark'
+      });
+
       setCanastasVacias([]);
       setCanastasLlenas([]);
 
     } catch (error) {
       console.log(error);
+      toast.error('Error al Registrar Factura', {
+        position: toast.POSITION.TOP_CENTER,
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        className: 'bg-white dark:bg-boxdark text-black dark:text-white'
+      });
     }
   };
 
@@ -147,7 +170,7 @@ export default function FormFactura() {
   return (
     <>
       <h1 className="text-title-lg font-bold">Registro de Ventas</h1>
-
+      <ToastContainer />
       <div>
         <label className="mb-3 block text-black dark:text-white"><FaCalendar className="inline-block mr-2" /> Fecha</label>
         <div className="relative">
@@ -160,7 +183,7 @@ export default function FormFactura() {
         </div>
       </div>
       <div>
-        <label className="mb-3 block text-black dark:text-white"><FaUser className="inline-block mr-2" /> Lote</label>
+        <label className="mb-3 block text-black dark:text-white"><FaThList className="inline-block mr-2" /> Lote</label>
         <select
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={selectedLoteId}
@@ -200,7 +223,17 @@ export default function FormFactura() {
       </div>
 
       <div className="mb-4">
-        <label className="mb-3 block text-black dark:text-white"><FaCalendar className="inline-block mr-2" /> Canastas Vacías</label>
+        <label className="mb-3 block text-black dark:text-white"><FaSortNumericDown className="inline-block mr-2" /> CantidadAves</label>
+        <input
+          type="number"
+          className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+          value={cantidadAves}
+          onChange={(e) => setCantidadAves(parseFloat(e.target.value))}
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="mb-3 block text-black dark:text-white"><FaBox className="inline-block mr-2" /> Canastas Vacías</label>
         {canastasVacias.map((canasta, index) => (
           <div key={index} className="flex items-center">
             <TextField
@@ -232,7 +265,7 @@ export default function FormFactura() {
       </div>
 
       <div className="mb-4">
-        <label className="mb-3 block text-black dark:text-white"><FaCalendar className="inline-block mr-2" /> Canastas Llenas</label>
+        <label className="mb-3 block text-black dark:text-white"><FaBox className="inline-block mr-2" /> Canastas Llenas</label>
         {canastasLlenas.map((canasta, index) => (
           <div key={index} className="flex items-center">
             <TextField
@@ -264,7 +297,7 @@ export default function FormFactura() {
       </div>
 
       <div className="mb-4">
-        <label className="mb-3 block text-black dark:text-white"><FaCalendar className="inline-block mr-2" /> Precio por Kilo</label>
+        <label className="mb-3 block text-black dark:text-white"><FaDollarSign className="inline-block mr-2" /> Precio por Kilo</label>
         <input
           type="number"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"

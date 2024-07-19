@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import clienteMongoAxios from '../../config/clienteMongoAxios'
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function FormProveedores() {
 
@@ -10,8 +12,28 @@ export default function FormProveedores() {
     const registrar = async () => {
         try {
             const {data} = await clienteMongoAxios.post('/api/suppliers/register',{nombre: nombre, documento: documento, telefono: telefono})
+            toast.success('Registro exitoso', {
+              position: toast.POSITION.TOP_CENTER,
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              className: 'bg-white dark:bg-boxdark'
+            });
             console.log(data)
         } catch (error) {
+          toast.error('Error al registrar', {
+            position: toast.POSITION.TOP_CENTER,
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            className: 'bg-white dark:bg-boxdark text-black dark:text-white'
+          });
             console.log(error)
         }
     }
@@ -19,6 +41,7 @@ export default function FormProveedores() {
   return (
     <>
     <h1 className='text-title-lg font-bold'>Registro de Proveedores</h1>
+    <ToastContainer />
       <div>
         <label className="mb-3 block text-black dark:text-white">
           Nombre
