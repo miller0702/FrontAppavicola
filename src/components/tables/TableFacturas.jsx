@@ -8,9 +8,8 @@ export default function TablesFacturas() {
     const [datos, setDatos] = useState([]);
     const [clientes, setClientes] = useState([]);
     const [usuarios, setUsuarios] = useState([]);
-
     const [paginaActual, setPaginaActual] = useState(1);
-    const [datosPorPagina] = useState(7); 
+    const [datosPorPagina] = useState(7);
 
     useEffect(() => {
         getTableData();
@@ -48,11 +47,13 @@ export default function TablesFacturas() {
             console.error('Error al obtener la lista de usuarios', error);
         }
     };
-
     const formatearFecha = (fecha) => {
         const options = { day: '2-digit', month: 'long', year: 'numeric' };
-        return new Date(fecha).toLocaleDateString('es-ES', options);
+        const date = new Date(fecha);
+        date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); // Ajusta la fecha a UTC
+        return date.toLocaleDateString('es-CO', options);
     };
+
 
     const obtenerNombreUsuario = (usuarioId) => {
         const usuario = usuarios.find((prov) => prov.id === usuarioId);
@@ -83,11 +84,11 @@ export default function TablesFacturas() {
             const response = await clienteMongoAxios.get(`/api/sale/${id}/invoice`, {
                 responseType: 'blob',
             });
-    
+
             if (response.status !== 200) {
                 throw new Error(`Error al generar la factura: ${response.statusText}`);
             }
-    
+
             const blob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -105,7 +106,7 @@ export default function TablesFacturas() {
                 draggable: true,
                 progress: undefined,
                 className: 'bg-white dark:bg-boxdark'
-              });
+            });
         } catch (error) {
             toast.error('Error al Descargar Factura', {
                 position: toast.POSITION.TOP_CENTER,
@@ -116,7 +117,7 @@ export default function TablesFacturas() {
                 draggable: true,
                 progress: undefined,
                 className: 'bg-white dark:bg-boxdark text-black dark:text-white'
-              });
+            });
             console.error('Error al descargar la factura:', error);
         }
     };
@@ -124,13 +125,13 @@ export default function TablesFacturas() {
     const calcularTotalCanastas = (canastas) => {
         return canastas.reduce((acc, val) => acc + val, 0);
     };
-    
+
     const obtenerCantidadKilos = (dato) => {
         const totalCanastasLlenas = calcularTotalCanastas(dato.canastas_llenas);
         const totalCanastasVacias = calcularTotalCanastas(dato.canastas_vacias);
         return totalCanastasLlenas - totalCanastasVacias;
     };
-    
+
     const calcularTotal = (dato) => {
         const cantidadKilos = obtenerCantidadKilos(dato);
         return cantidadKilos * dato.preciokilo;
@@ -141,39 +142,39 @@ export default function TablesFacturas() {
             const response = await clienteMongoAxios.get(`/api/sale/${id}/invoice`, {
                 responseType: 'blob',
             });
-    
+
             if (response.status !== 200) {
                 throw new Error(`Error al generar la factura: ${response.statusText}`);
             }
-    
+
             const blob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(blob);
-    
+
             const numeroTelefono = '3022997019';
             const mensaje = `Hola, aquí está la factura solicitada: ${url}`;
             const enlaceWhatsApp = crearEnlaceWhatsApp(numeroTelefono, mensaje);
-    
+
             window.open(enlaceWhatsApp, '_blank');
-    
+
             toast.success('Factura enviada por WhatsApp');
         } catch (error) {
             console.error('Error al enviar la factura por WhatsApp:', error);
             toast.error('Error al enviar la factura por WhatsApp');
         }
     };
-    
+
     const crearEnlaceWhatsApp = (numeroTelefono, mensaje) => {
         return `https://api.whatsapp.com/send?phone=${numeroTelefono}&text=${encodeURIComponent(mensaje)}`;
     };
-    
-    
+
+
 
     const datosFiltrados = datos.slice((paginaActual - 1) * datosPorPagina, paginaActual * datosPorPagina);
 
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-            
-        <ToastContainer />
+
+            <ToastContainer />
             <div className="max-w-full overflow-x-auto">
                 <table className="w-full table-auto">
                     <thead>
@@ -239,7 +240,7 @@ export default function TablesFacturas() {
                                 </td>
                                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                     <p className="inline-flex rounded-full bg-success bg-opacity-10 py-1 px-3 text-sm font-medium text-success">
-                                    {formatearPrecio(calcularTotal(dato))}
+                                        {formatearPrecio(calcularTotal(dato))}
                                     </p>
                                 </td>
                                 <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
@@ -260,36 +261,36 @@ export default function TablesFacturas() {
                                             className="bg-meta-3 hover:bg-primary-dark text-white rounded-full p-2">
                                             <FaFilePdf />
                                         </button>
-                                </div>
-                            </td>
+                                    </div>
+                                </td>
                             </tr>
                         ))}
-                </tbody>
-            </table>
-        </div>
+                    </tbody>
+                </table>
+            </div>
 
-            {/* Controles de Paginación */ }
-    <div className="flex justify-between items-center mt-6">
-        <button
-            onClick={() => cambiarPagina(paginaActual - 1)}
-            disabled={paginaActual === 1}
-            className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
-        >
-            Anterior
-        </button>
-        <div className="flex items-center space-x-2">
-            <span>Página {paginaActual}</span>
-            <span>de</span>
-            <span>{Math.ceil(datos.length / datosPorPagina)}</span>
-        </div>
-        <button
-            onClick={() => cambiarPagina(paginaActual + 1)}
-            disabled={paginaActual === Math.ceil(datos.length / datosPorPagina)}
-            className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
-        >
-            Siguiente
-        </button>
-    </div>
+            {/* Controles de Paginación */}
+            <div className="flex justify-between items-center mt-6">
+                <button
+                    onClick={() => cambiarPagina(paginaActual - 1)}
+                    disabled={paginaActual === 1}
+                    className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
+                >
+                    Anterior
+                </button>
+                <div className="flex items-center space-x-2">
+                    <span>Página {paginaActual}</span>
+                    <span>de</span>
+                    <span>{Math.ceil(datos.length / datosPorPagina)}</span>
+                </div>
+                <button
+                    onClick={() => cambiarPagina(paginaActual + 1)}
+                    disabled={paginaActual === Math.ceil(datos.length / datosPorPagina)}
+                    className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
+                >
+                    Siguiente
+                </button>
+            </div>
         </div >
     );
 }
