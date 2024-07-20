@@ -8,6 +8,7 @@ import TablesClientes from "../components/tables/TableClientes";
 import TablesCompraAlimento from "../components/tables/TableCompraAlimento";
 import TablesLote from "../components/tables/TableLote";
 import TablesProveedores from "../components/tables/TableProveedores";
+import TablesAbonos from "../components/tables/TableAbonos";
 
 const datos = {
   "1": <TablesLote />,
@@ -18,6 +19,7 @@ const datos = {
   "6": <TablesClientes />,
   "7": <TablesProveedores />,
   "8": <TablesFacturas />,
+  "9": <TablesAbonos />,
 }
 
 const Tables = () => {
@@ -75,7 +77,8 @@ const Tables = () => {
                     <option value="5">Alimentacion</option>
                     <option value="6">Clientes</option>
                     <option value="7">Proveedores</option>
-                    <option value="8">Factura</option>
+                    <option value="8">Facturas</option>
+                    <option value="9">Abonos</option>
             </select>
             <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
               <svg

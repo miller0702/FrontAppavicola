@@ -5,7 +5,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { TextField } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaUniversity, FaCalendarAlt, FaDollarSign, FaTypo3, FaArrowUp, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaUniversity, FaCalendarAlt, FaDollarSign, FaTypo3, FaArrowUp, FaMapMarkerAlt, FaThList } from 'react-icons/fa';
+import format from 'date-fns/format';
 
 export default function FormCompraAlimento() {
   const [proveedores, setProveedores] = useState([]);
@@ -18,6 +19,8 @@ export default function FormCompraAlimento() {
   const [valorFlete, setValorFlete] = useState('');
   const [valorBultos, setValorBultos] = useState('');
   const [valorConFlete, setValorConFlete] = useState('');
+  const [lotes, setLotes] = useState([]);
+  const [selectedLoteId, setSelectedLoteId] = useState('');
 
   useEffect(() => {
     const fetchProveedores = async () => {
@@ -41,54 +44,59 @@ export default function FormCompraAlimento() {
     fetchProveedores();
   }, []);
 
-  const calcularValorBultos = () => {
-    const cantidad = parseInt(cantidadBultos);
-    const valor = parseFloat(valorUnitario);
-    if (!isNaN(cantidad) && !isNaN(valor)) {
-      const valorCalculado = cantidad * valor;
-      setValorBultos(valorCalculado.toFixed(2));
-    } else {
-      setValorBultos('');
-    }
-  };
+  useEffect(() => {
+    const fetchLotes = async () => {
+      try {
+        const response = await clienteMongoAxios.get('/api/lote/getAll');
+        setLotes(response.data);
+      } catch (error) {
+        console.error('Error al obtener la lista de lotes', error);
+      }
+    };
+    fetchLotes();
+  }, []);
 
-  const calcularValorConFlete = () => {
-    const flete = parseFloat(valorFlete);
-    const bultos = parseFloat(valorBultos);
-    if (!isNaN(flete) && !isNaN(bultos)) {
-      const valorCalculado = flete + bultos;
-      setValorConFlete(valorCalculado.toFixed(2));
-    } else {
-      setValorConFlete('');
-    }
-  };
+  useEffect(() => {
+    console.log('Calculando valor de los bultos y valor con flete');
+    const cantidad = parseFloat(cantidadBultos) || 0;
+    const valor = parseFloat(valorUnitario) || 0;
+    const flete = parseFloat(valorFlete) || 0;
+
+    const valorBultosCalculado = cantidad * valor;
+    const valorConFleteCalculado = valorBultosCalculado + flete;
+
+    setValorBultos(valorBultosCalculado.toFixed(2));
+    setValorConFlete(valorConFleteCalculado.toFixed(2));
+
+    console.log(`cantidadBultos: ${cantidad}, valorUnitario: ${valor}, valorFlete: ${flete}`);
+    console.log(`valorBultos: ${valorBultosCalculado.toFixed(2)}, valorConFlete: ${valorConFleteCalculado.toFixed(2)}`);
+  }, [cantidadBultos, valorUnitario, valorFlete]);
 
   const handleChangeCantidadBultos = (e) => {
-    const value = e.target.value;
-    setCantidadBultos(value);
-    calcularValorBultos();
-    calcularValorConFlete(); 
+    setCantidadBultos(e.target.value);
   };
 
   const handleChangeValorUnitario = (e) => {
-    const value = e.target.value;
-    setValorUnitario(value);
-    calcularValorBultos();
-    calcularValorConFlete();
+    setValorUnitario(e.target.value);
   };
+
+  const handleChangeValorFlete = (e) => {
+    setValorFlete(e.target.value);
+  };  
 
   const registrar = async () => {
     try {
       const { data } = await clienteMongoAxios.post('/api/buys/register', {
         proveedor_id: selectedProveedorId,
-        fecha: fecha.toISOString().split('T')[0],
+        lote_id: selectedLoteId,
+        fecha: fecha,
         procedencia: procedencia,
         tipo_purina: tipoPurina,
-        cantidad_bultos: parseInt(cantidadBultos),
-        valor_unitario: parseFloat(valorUnitario),
-        valor_flete: parseFloat(valorFlete),
-        valor_bultos: parseFloat(valorBultos),
-        valor_con_flete: parseFloat(valorConFlete),
+        cantidad_bultos: parseInt(cantidadBultos) || 0,
+        valor_unitario: parseFloat(valorUnitario) || 0,
+        valor_flete: parseFloat(valorFlete) || 0,
+        valor_bultos: parseFloat(valorBultos) || 0,
+        valor_con_flete: parseFloat(valorConFlete) || 0,
       });
       console.log(data);
       toast.success('Registro exitoso', {
@@ -101,6 +109,18 @@ export default function FormCompraAlimento() {
         progress: undefined,
         className: 'bg-white dark:bg-boxdark'
       });
+
+      setSelectedProveedorId('');
+      setFecha(null);
+      setProcedencia('');
+      setTipoPurina('');
+      setCantidadBultos('');
+      setValorUnitario('');
+      setValorFlete('');
+      setValorBultos('');
+      setValorConFlete('');
+
+
     } catch (error) {
       console.error('Error al registrar', error);
       toast.error('Error al registrar', {
@@ -121,7 +141,25 @@ export default function FormCompraAlimento() {
       <h1 className='text-title-lg font-bold'>Registro de Compra de Alimento</h1>
       <ToastContainer />
       <div>
-        <label className="mb-3 block text-black dark:text-white"><FaUniversity className="inline-block mr-2" /> Proveedor</label>
+        <label className="mb-3 block text-black dark:text-white"><FaThList className="inline-block mr-2" /> Lote</label>
+        <select
+          className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+          value={selectedLoteId}
+          onChange={(e) => setSelectedLoteId(e.target.value)}
+        >
+          <option value="">Selecciona un lote</option>
+          {lotes.map((lote) => (
+            <option key={lote.id} value={lote.id}>
+              {lote.descripcion}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="mb-3 block text-black dark:text-white">
+          <FaUniversity className="inline-block mr-2" />
+          Proveedor
+        </label>
         <select
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={selectedProveedorId}
@@ -148,12 +186,16 @@ export default function FormCompraAlimento() {
               className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 pl-10 pr-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
               onChange={(date) => setFecha(date)}
               renderInput={(params) => <TextField {...params} fullWidth />}
+              format='dd-MM-yyyy'
             />
           </LocalizationProvider>
         </div>
       </div>
       <div>
-        <label className="mb-3 block text-black dark:text-white"><FaMapMarkerAlt className="inline-block mr-2" /> Procedencia</label>
+        <label className="mb-3 block text-black dark:text-white">
+          <FaMapMarkerAlt className="inline-block mr-2" />
+          Procedencia
+        </label>
         <select
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={procedencia}
@@ -165,7 +207,10 @@ export default function FormCompraAlimento() {
         </select>
       </div>
       <div>
-        <label className="mb-3 block text-black dark:text-white"><FaTypo3 className="inline-block mr-2" /> Tipo de Purina</label>
+        <label className="mb-3 block text-black dark:text-white">
+          <FaTypo3 className="inline-block mr-2" />
+          Tipo de Purina
+        </label>
         <select
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={tipoPurina}
@@ -179,7 +224,10 @@ export default function FormCompraAlimento() {
         </select>
       </div>
       <div>
-        <label className="mb-3 block text-black dark:text-white"><FaArrowUp className="inline-block mr-2" /> Cantidad de Bultos</label>
+        <label className="mb-3 block text-black dark:text-white">
+          <FaArrowUp className="inline-block mr-2" />
+          Cantidad de Bultos
+        </label>
         <input
           type="number"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
@@ -188,7 +236,10 @@ export default function FormCompraAlimento() {
         />
       </div>
       <div>
-        <label className="mb-3 block text-black dark:text-white"><FaDollarSign className="inline-block mr-2" /> Valor Unitario</label>
+        <label className="mb-3 block text-black dark:text-white">
+          <FaDollarSign className="inline-block mr-2" />
+          Valor Unitario
+        </label>
         <input
           type="number"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
@@ -197,19 +248,22 @@ export default function FormCompraAlimento() {
         />
       </div>
       <div>
-        <label className="mb-3 block text-black dark:text-white"><FaDollarSign className="inline-block mr-2" /> Valor del Flete</label>
+        <label className="mb-3 block text-black dark:text-white">
+          <FaDollarSign className="inline-block mr-2" />
+          Valor del Flete
+        </label>
         <input
           type="number"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={valorFlete}
-          onChange={(e) => {
-            setValorFlete(e.target.value);
-            calcularValorConFlete();
-          }}
+          onChange={handleChangeValorFlete}
         />
       </div>
       <div>
-        <label className="mb-3 block text-black dark:text-white"><FaDollarSign className="inline-block mr-2" /> Valor de los Bultos</label>
+        <label className="mb-3 block text-black dark:text-white">
+          <FaDollarSign className="inline-block mr-2" />
+          Valor de los Bultos
+        </label>
         <input
           type="number"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
@@ -218,7 +272,10 @@ export default function FormCompraAlimento() {
         />
       </div>
       <div>
-        <label className="mb-3 block text-black dark:text-white"><FaDollarSign className="inline-block mr-2" /> Valor con Flete</label>
+        <label className="mb-3 block text-black dark:text-white">
+          <FaDollarSign className="inline-block mr-2" />
+          Valor con Flete
+        </label>
         <input
           type="number"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
@@ -228,7 +285,7 @@ export default function FormCompraAlimento() {
       </div>
       <button
         className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1"
-        onClick={() => registrar()}
+        onClick={registrar}
       >
         Guardar
       </button>

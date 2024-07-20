@@ -6,6 +6,8 @@ import { FaCalendar, FaUser, FaPlus, FaTrash, FaSortNumericDown, FaBox, FaDollar
 import useAuth from '../../hooks/useAuth';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 export default function FormFactura() {
   const { usuario } = useAuth();
@@ -20,7 +22,7 @@ export default function FormFactura() {
   const [canastasVacias, setCanastasVacias] = useState([]);
   const [canastasLlenas, setCanastasLlenas] = useState([]);
   const [precioKilo, setPrecioKilo] = useState(0);
-  const [fecha, setFecha] = useState('');
+  const [fecha, setFecha] = useState(null);
   const [nuevaCanastaVacia, setNuevaCanastaVacia] = useState('');
   const [nuevaCanastaLlena, setNuevaCanastaLlena] = useState('');
   const [totalCanastasVacias, setTotalCanastasVacias] = useState(0);
@@ -121,9 +123,16 @@ export default function FormFactura() {
         className: 'bg-white dark:bg-boxdark'
       });
 
+      setSelectedClienteId('');
+      setSelectedLoteId('');
+      setCantidadAves(0);
       setCanastasVacias([]);
       setCanastasLlenas([]);
-
+      setPrecioKilo(0);
+      setFecha(null);
+      setTotalCanastasVacias(0);
+      setTotalCanastasLlenas(0);
+      setValorFactura(0);
     } catch (error) {
       console.log(error);
       toast.error('Error al Registrar Factura', {
@@ -174,12 +183,16 @@ export default function FormFactura() {
       <div>
         <label className="mb-3 block text-black dark:text-white"><FaCalendar className="inline-block mr-2" /> Fecha</label>
         <div className="relative">
-          <input
-            type="date"
-            className="custom-input-date custom-input-date-1 w-full rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-            value={fecha}
-            onChange={(e) => setFecha(e.target.value)}
-          />
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              label="Seleccione la fecha"
+              value={fecha}
+              className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 pl-10 pr-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+              onChange={(newValue) => setFecha(newValue)}
+              renderInput={(params) => <TextField {...params} fullWidth />}
+              format='dd-MM-yyyy'
+            />
+          </LocalizationProvider>
         </div>
       </div>
       <div>

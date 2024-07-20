@@ -23,6 +23,11 @@ export default function FormClientes() {
         progress: undefined,
         className: 'bg-white dark:bg-boxdark'
       });
+
+      setCliente("");
+      setDocumento("");
+      telefono("");
+      
     } catch (error) {
       console.log(error);
       toast.error('Error al registrar', {

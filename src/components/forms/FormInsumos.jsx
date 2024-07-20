@@ -6,14 +6,29 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { TextField } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaAudioDescription, FaCalendarAlt, FaDollarSign, FaUniversity } from 'react-icons/fa';
+import { FaAudioDescription, FaCalendarAlt, FaDollarSign, FaThList, FaUniversity } from 'react-icons/fa';
+import { format } from 'date-fns';
 
 export default function FormInsumos() {
   const [proveedores, setProveedores] = useState([]);
   const [selectedProveedorId, setSelectedProveedorId] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [precio, setPrecio] = useState(0);
-  const [fecha, setFecha] = useState('');
+  const [fecha, setFecha] = useState(null);
+  const [lotes, setLotes] = useState([]);
+  const [selectedLoteId, setSelectedLoteId] = useState('');
+
+  useEffect(() => {
+    const fetchLotes = async () => {
+      try {
+        const response = await clienteMongoAxios.get('/api/lote/getAll');
+        setLotes(response.data);
+      } catch (error) {
+        console.error('Error al obtener la lista de lotes', error);
+      }
+    };
+    fetchLotes();
+  }, []);
 
   useEffect(() => {
     const fetchProveedores = async () => {
@@ -41,6 +56,7 @@ export default function FormInsumos() {
     try {
       const { data } = await clienteMongoAxios.post('/api/supplies/register', {
         proveedor_id: selectedProveedorId,
+        lote_id: selectedLoteId,
         descripcioncompra: descripcion,
         preciocompra: precio,
         fecha: fecha
@@ -56,6 +72,13 @@ export default function FormInsumos() {
         progress: undefined,
         className: 'bg-white dark:bg-boxdark'
       });
+
+      setSelectedProveedorId('');
+      setSelectedLoteId('');
+      setDescripcion('');
+      setPrecio(0);
+      setFecha(null);
+
     } catch (error) {
       console.log(error);
       toast.error('Error al registrar', {
@@ -75,6 +98,21 @@ export default function FormInsumos() {
     <>
       <h1 className='text-title-lg font-bold'>Registro de Insumos</h1>
       <ToastContainer />
+      <div>
+        <label className="mb-3 block text-black dark:text-white"><FaThList className="inline-block mr-2" /> Lote</label>
+        <select
+          className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+          value={selectedLoteId}
+          onChange={(e) => setSelectedLoteId(e.target.value)}
+        >
+          <option value="">Selecciona un lote</option>
+          {lotes.map((lote) => (
+            <option key={lote.id} value={lote.id}>
+              {lote.descripcion}
+            </option>
+          ))}
+        </select>
+      </div>
       <div>
         <label className="mb-3 block text-black dark:text-white"><FaUniversity className="inline-block mr-2" /> Proveedor</label>
         <select
@@ -103,7 +141,7 @@ export default function FormInsumos() {
         <label className="mb-3 block text-black dark:text-white"><FaDollarSign className="inline-block mr-2" /> Precio de la Compra</label>
         <input
           type="number"
-          placeholder="Default Input"
+          placeholder="Ingrese el precio"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={precio}
           onChange={(e) => setPrecio(e.target.value)}
@@ -120,8 +158,9 @@ export default function FormInsumos() {
               label="Seleccione la fecha"
               value={fecha}
               className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 pl-10 pr-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-              onChange={(date) => setFecha(date)}
+              onChange={(newValue) => setFecha(newValue)}
               renderInput={(params) => <TextField {...params} fullWidth />}
+              format='dd-MM-yyyy'
             />
           </LocalizationProvider>
         </div>

@@ -8,6 +8,7 @@ import FormClientes from "../components/forms/FormClientes";
 import FormLote from "../components/forms/FormLote";
 import FormCompraAlimento from "../components/forms/FormCompraAlimento";
 import FormProveedores from "../components/forms/FormProveedores";
+import FormAbonos from "../components/forms/FormAbonos";
 
 const componente = {
   "1": <FormLote />,
@@ -18,12 +19,13 @@ const componente = {
   "6": <FormClientes />,
   "7": <FormProveedores />,
   "8": <FormFactura />,
+  "9": <FormAbonos />,
 }
 
 const FormElements = () => {
 
   const [registro, setRegistro] = useState(1)
-  const [tipo, setTipo ] = useState("1")
+  const [tipo, setTipo] = useState("1")
 
   switch (registro) {
     case "1":
@@ -42,15 +44,18 @@ const FormElements = () => {
       setTipo("5")
       break;
     case "6":
-        setTipo("6")
-        break;
+      setTipo("6")
+      break;
     case "7":
-        setTipo("7")
-        break;
+      setTipo("7")
+      break;
     case "8":
-        setTipo("8")
-        break;
-  
+      setTipo("8")
+      break;
+    case "9":
+      setTipo("9")
+      break;
+
     default:
       break;
   }
@@ -60,11 +65,11 @@ const FormElements = () => {
       <Breadcrumb pageName="Formulario de Elementos" />
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-2">
-        
+
         <div className="flex flex-col gap-9">
           {/* <!-- Select input --> */}
           <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-            
+
             <div className="flex flex-col gap-5.5 p-6.5">
               <div>
                 <label className="mb-3 block text-black dark:text-white">
@@ -112,7 +117,8 @@ const FormElements = () => {
                     <option value="5">Alimentacion</option>
                     <option value="6">Clientes</option>
                     <option value="7">Proveedores</option>
-                    <option value="8">Factura</option>
+                    <option value="8">Facturas</option>
+                    <option value="9">Abonos</option>
                   </select>
                   <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
                     <svg
@@ -150,7 +156,7 @@ const FormElements = () => {
             </div>
           </div>
 
-          
+
         </div>
       </div>
     </>

@@ -3,7 +3,7 @@ import clienteMongoAxios from "../../config/clienteMongoAxios";
 import { FaEye, FaPencilAlt, FaTrash, FaSortUp, FaSortDown } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import { Modal, Box, Button, TextField } from '@mui/material';
+import { Modal, Box, Button, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
@@ -16,9 +16,11 @@ export default function TableMortalidad() {
   const [open, setOpen] = useState(false);
   const [currentRecord, setCurrentRecord] = useState({});
   const [sortOrder, setSortOrder] = useState('desc');
+  const [lotes, setLotes] = useState([]);
 
   useEffect(() => {
     getTableData();
+    fetchLotes();
   }, []);
 
   useEffect(() => {
@@ -99,6 +101,20 @@ export default function TableMortalidad() {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
+  const obtenerNombreLote = (loteId) => {
+    const lote = lotes.find((lot) => lot.id === loteId);
+    return lote ? lote.descripcion : 'Desconocido';
+  };
+
+  const fetchLotes = async () => {
+    try {
+      const response = await clienteMongoAxios.get('/api/lote/getAll');
+      setLotes(response.data);
+    } catch (error) {
+      console.error('Error al obtener la lista de lotes', error);
+    }
+  };
+
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <ToastContainer />
@@ -111,6 +127,9 @@ export default function TableMortalidad() {
                 <button onClick={toggleSortOrder} className="ml-2">
                   {sortOrder === 'asc' ? <FaSortUp /> : <FaSortDown />}
                 </button>
+              </th>
+              <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+                Lote
               </th>
               <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                 Hembras
@@ -132,6 +151,11 @@ export default function TableMortalidad() {
                     <h5 className="font-medium text-black dark:text-white">
                       {formatearFecha(dato.fecha)}
                     </h5>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <p className="inline-flex font-medium text-black dark:text-white">
+                      {obtenerNombreLote(dato.lote_id)}
+                    </p>
                   </td>
                   <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                     <p className="inline-flex rounded-full bg-meta-1 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-1">
@@ -190,11 +214,29 @@ export default function TableMortalidad() {
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
               label="Fecha"
+              className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
               value={currentRecord.fecha}
               onChange={handleDateChange}
               renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
+              format='dd-MM-yyyy'
             />
           </LocalizationProvider>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Lote</InputLabel>
+            <Select
+              name="lote_id"
+              value={currentRecord.lote_id || ''}
+              onChange={handleChange}
+              label="Lote"
+            >
+              {lotes.map(lote => (
+                <MenuItem
+                  key={lote.id} value={lote.id}>
+                  {lote.descripcion}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <TextField
             margin="normal"
             fullWidth

@@ -7,6 +7,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import TextField from '@mui/material/TextField';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { format } from 'date-fns';
 
 export default function FormLote() {
   const [proveedores, setProveedores] = useState([]);
@@ -14,7 +15,7 @@ export default function FormLote() {
   const [descripcion, setDescripcion] = useState('');
   const [cantidadAves, setCantidadAves] = useState('');
   const [precio, setPrecio] = useState(0);
-  const [fechaLlegada, setFechaLlegada] = useState('');
+  const [fechaLlegada, setFechaLlegada] = useState(null);
 
   useEffect(() => {
     const fetchProveedores = async () => {
@@ -45,7 +46,7 @@ export default function FormLote() {
         descripcion: descripcion,
         cantidad_aves: cantidadAves,
         precio: precio,
-        fecha_llegada: fechaLlegada});
+        fecha_llegada: fechaLlegada });
       console.log(data);
       toast.success('Registro exitoso', {
         position: toast.POSITION.TOP_CENTER,
@@ -57,6 +58,13 @@ export default function FormLote() {
         progress: undefined,
         className: 'bg-white dark:bg-boxdark'
       });
+
+      setSelectedProveedorId('')
+      setDescripcion('')
+      setCantidadAves('')
+      setPrecio(0)
+      setFechaLlegada(null)
+
     } catch (error) {
       console.log(error);
       toast.error('Error al registrar', {
@@ -147,8 +155,12 @@ export default function FormLote() {
               label="Seleccione la fecha de llegada"
               value={fechaLlegada}
               className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 pl-10 pr-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-              onChange={date => setFechaLlegada(date)}
-              renderInput={(params) => <TextField {...params} fullWidth />}
+              onChange={(newValue) => setFechaLlegada(newValue)}
+              renderInput={(params) => {
+                const formattedValue = fechaLlegada ? format(fechaLlegada, 'ddMMyyyy') : '';
+                return <TextField {...params} value={formattedValue} fullWidth />;
+              }}
+              format="dd-MM-yyyy"
             />
           </LocalizationProvider>
         </div>

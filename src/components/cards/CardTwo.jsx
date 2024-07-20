@@ -11,7 +11,7 @@ const CardTwo = () => {
   const totalMuertes = async () => {
     try {
       const {data} = await clienteMongoAxios.get('/api/sale/getTotalSale')
-      setTotalVentas(data.totalgeneral)
+      setTotalVentas(data.total_sales)
     } catch (error) {
       console.log(error)
     }
