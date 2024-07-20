@@ -26,7 +26,7 @@ export default function FormClientes() {
 
       setCliente("");
       setDocumento("");
-      telefono("");
+      setTelefono("");
       
     } catch (error) {
       console.log(error);
