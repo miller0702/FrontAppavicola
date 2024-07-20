@@ -93,7 +93,7 @@ export default function FormFactura() {
     const numeroFactura = await generarNumeroAleatorio();
     try {
       const totalKilos = totalCanastasLlenas - totalCanastasVacias;
-
+  
       const factura = {
         lote_id: selectedLoteId,
         cliente_id: selectedClienteId,
@@ -106,33 +106,36 @@ export default function FormFactura() {
         numerofactura: numeroFactura,
         totalkilos: totalKilos,
       };
-
+  
       const { data } = await clienteMongoAxios.post('/api/sale/register', factura);
-      const { data2 } = await clienteMongoAxios.post('/api/saleMg/register', factura);
-      console.log(data);
-      console.log(data2);
-
-      toast.success('Factura Registrada con Éxito', {
-        position: toast.POSITION.TOP_CENTER,
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        className: 'bg-white dark:bg-boxdark'
-      });
-
-      setSelectedClienteId('');
-      setSelectedLoteId('');
-      setCantidadAves(0);
-      setCanastasVacias([]);
-      setCanastasLlenas([]);
-      setPrecioKilo(0);
-      setFecha(null);
-      setTotalCanastasVacias(0);
-      setTotalCanastasLlenas(0);
-      setValorFactura(0);
+      
+      if (data && data.success) {
+        console.log(data);
+  
+        toast.success('Factura Registrada con Éxito', {
+          position: toast.POSITION.TOP_CENTER,
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          className: 'bg-white dark:bg-boxdark'
+        });
+  
+        setSelectedClienteId('');
+        setSelectedLoteId('');
+        setCantidadAves(0);
+        setCanastasVacias([]);
+        setCanastasLlenas([]);
+        setPrecioKilo(0);
+        setFecha(null);
+        setTotalCanastasVacias(0);
+        setTotalCanastasLlenas(0);
+        setValorFactura(0);
+      } else {
+        throw new Error('Error en el registro de la factura en /api/sale/register');
+      }
     } catch (error) {
       console.log(error);
       toast.error('Error al Registrar Factura', {
@@ -147,6 +150,7 @@ export default function FormFactura() {
       });
     }
   };
+  
 
   useEffect(() => {
     const fetchClientes = async () => {
