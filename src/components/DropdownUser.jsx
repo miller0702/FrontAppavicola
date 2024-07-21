@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-
-import UserOne from '../assets/images/user/user-01.png';
 import clienteMongoAxios from '../config/clienteMongoAxios';
 import useAuth from '../hooks/useAuth';
 
@@ -41,13 +39,13 @@ const DropdownUser = () => {
 
   useEffect(() => {
     getUsuario()
-  },[])
+  }, [])
 
   const getUsuario = async () => {
     try {
-      const {data} = await clienteMongoAxios.get('/api/users/getUserById',{
+      const { data } = await clienteMongoAxios.get('/api/users/getUserById', {
         headers: {
-          'Authorization': `${auth.token}` // Agrega el token al encabezado de autorización
+          'Authorization': `${auth.token}`
         }
       })
       setUsuario(data)
@@ -73,13 +71,17 @@ const DropdownUser = () => {
         </span>
 
         <span className="h-12 w-12 rounded-full">
-          <img src={`${usuario[0]?.image}`} alt="User" />
+          <img
+            src={usuario[0]?.image || '../assets/images/Logo.png'}
+            alt="User"
+            className="h-12 w-12 rounded-full"
+          />
+
         </span>
 
         <svg
-          className={`hidden fill-current sm:block ${
-            dropdownOpen ? 'rotate-180' : ''
-          }`}
+          className={`hidden fill-current sm:block ${dropdownOpen ? 'rotate-180' : ''
+            }`}
           width="12"
           height="8"
           viewBox="0 0 12 8"
@@ -100,9 +102,8 @@ const DropdownUser = () => {
         ref={dropdown}
         onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
-        className={`absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${
-          dropdownOpen === true ? 'block' : 'hidden'
-        }`}
+        className={`absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? 'block' : 'hidden'
+          }`}
       >
         <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
           <li>
@@ -130,7 +131,7 @@ const DropdownUser = () => {
               Mi Perfil
             </Link>
           </li>
-          
+
           <li>
             <Link
               to="/panel/settings"
@@ -158,7 +159,7 @@ const DropdownUser = () => {
           </li>
         </ul>
         <button className="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base first-letter"
-        onClick={logout}>
+          onClick={logout}>
           <svg
             className="fill-current"
             width="22"

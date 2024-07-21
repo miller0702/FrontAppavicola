@@ -40,8 +40,10 @@ export default function TableMortalidad() {
 
   const formatearFecha = (fecha) => {
     const options = { day: '2-digit', month: 'long', year: 'numeric' };
-    return new Date(fecha).toLocaleDateString('es-ES', options);
-  };
+    const date = new Date(fecha);
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); // Ajusta la fecha a UTC
+    return date.toLocaleDateString('es-CO', options);
+};
 
   const cambiarPagina = (numeroPagina) => {
     setPaginaActual(numeroPagina);

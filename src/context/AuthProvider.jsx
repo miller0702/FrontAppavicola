@@ -49,7 +49,6 @@
                     setPagoStateInformacion,
                     pagoInformacion,
                     usuario, 
-                    nombreVendedor: usuario.nombre,
                     setUsuario,
                     logout
                 }}

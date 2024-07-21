@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
-import { FaTrash, FaPencilAlt } from 'react-icons/fa'; // Importa los iconos necesarios
-import { Box, Button, Modal,  TextField } from '@mui/material';
+import { FaTrash, FaPencilAlt, FaFilePdf } from 'react-icons/fa';
+import { Box, Button, Modal, TextField } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Importa el CSS de react-toastify
 
 export default function TablesClientes() {
     const [datos, setDatos] = useState([]);
@@ -25,7 +26,6 @@ export default function TablesClientes() {
     const formatearPrecio = (precio) => {
         return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(precio);
     };
-
 
     const cambiarPagina = (numeroPagina) => {
         setPaginaActual(numeroPagina);
@@ -69,7 +69,57 @@ export default function TablesClientes() {
         }
     };
 
+    const descargarFactura = async (id) => {
+        try {
+            const response = await clienteMongoAxios.get(`/api/customers/${id}/invoice`, {
+                responseType: 'blob',
+            });
 
+            if (response.status !== 200) {
+                throw new Error(`Error al generar la factura: ${response.statusText}`);
+            }
+
+            const cliente = datos.find(dato => dato.id === id);
+            const fecha = new Date();
+            const año = fecha.getFullYear();
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            const día = String(fecha.getDate()).padStart(2, '0'); 
+            const fechaFormateada = `${día}-${mes}-${año}`;
+
+            const clienteNombreMayusculas = cliente.nombre.toUpperCase();
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `SALDO_${clienteNombreMayusculas}_${fechaFormateada}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            toast.success('Factura Descargada con Éxito', {
+                position: toast.POSITION.TOP_CENTER,
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                className: 'bg-white dark:bg-boxdark'
+            });
+        } catch (error) {
+            toast.error('Error al Descargar Factura', {
+                position: toast.POSITION.TOP_CENTER,
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                className: 'bg-white dark:bg-boxdark text-black dark:text-white'
+            });
+            console.error('Error al descargar la factura:', error);
+        }
+    };
 
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
@@ -102,56 +152,61 @@ export default function TablesClientes() {
                         </tr>
                     </thead>
                     <tbody>
-                    {datosFiltrados
+                        {datosFiltrados
                             .slice((paginaActual - 1) * datosPorPagina, paginaActual * datosPorPagina)
                             .map((dato) => (
                                 <tr key={dato.id}>
-                                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                    <h5 className="font-medium text-black dark:text-white">
-                                        {dato.nombre}
-                                    </h5>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                    <p className="inline-flex rounded-full bg-meta-1 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-1">
-                                        {dato.documento}
-                                    </p>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                    <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
-                                        {dato.telefono}
-                                    </p>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                    <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
-                                        {formatearPrecio(dato.total_payments)}
-                                    </p>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                    <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
-                                        {formatearPrecio(dato.total_sales)}
-                                    </p>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                    <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
-                                        {formatearPrecio(dato.deuda_actual)}
-                                    </p>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                    <div className="flex items-center space-x-3.5">
-                                        <button
-                                            onClick={() => handleEdit(dato)}
-                                            className="bg-primary hover:bg-primary-dark text-white rounded-full p-2">
-                                            <FaPencilAlt />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(dato.id)}
-                                            className="bg-red hover:bg-primary-dark text-white rounded-full p-2">
-                                            <FaTrash />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+                                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                                        <h5 className="font-medium text-black dark:text-white">
+                                            {dato.nombre}
+                                        </h5>
+                                    </td>
+                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                        <p className="inline-flex rounded-full bg-meta-1 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-1">
+                                            {dato.documento}
+                                        </p>
+                                    </td>
+                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                        <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
+                                            {dato.telefono}
+                                        </p>
+                                    </td>
+                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                        <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
+                                            {formatearPrecio(dato.total_payments)}
+                                        </p>
+                                    </td>
+                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                        <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
+                                            {formatearPrecio(dato.total_sales)}
+                                        </p>
+                                    </td>
+                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                        <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
+                                            {formatearPrecio(dato.deuda_actual)}
+                                        </p>
+                                    </td>
+                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                        <div className="flex items-center space-x-3.5">
+                                            <button
+                                                onClick={() => handleEdit(dato)}
+                                                className="bg-primary hover:bg-primary-dark text-white rounded-full p-2">
+                                                <FaPencilAlt />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(dato.id)}
+                                                className="bg-red hover:bg-primary-dark text-white rounded-full p-2">
+                                                <FaTrash />
+                                            </button>
+                                            <button
+                                                onClick={() => descargarFactura(dato.id)}
+                                                className="bg-meta-3 hover:bg-primary-dark text-white rounded-full p-2">
+                                                <FaFilePdf />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
                     </tbody>
                 </table>
             </div>

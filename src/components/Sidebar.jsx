@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { FaHome, FaUsers, FaChartLine, FaCogs, FaBell, FaEnvelope, FaClipboardList, FaSignOutAlt, FaCalendar, FaRegistered, FaDatabase, FaShieldVirus, FaTools, FaChartArea } from 'react-icons/fa';
+import { FaHome, FaUsers, FaChartLine, FaCogs, FaBell, FaEnvelope, FaClipboardList, FaSignOutAlt, FaCalendar, FaRegistered, FaDatabase, FaShieldVirus, FaTools, FaChartArea, FaFileArchive, FaFileCsv } from 'react-icons/fa';
 import SidebarLinkGroup from "./SidebarLinkGroup";
 import Logo from "../assets/images/LogoPlataformaBlanco.png";
 import useAuth from "../hooks/useAuth";
-import { FaHouse } from "react-icons/fa6";
+import { FaFileContract, FaHouse } from "react-icons/fa6";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const { logout } = useAuth();
@@ -62,6 +62,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { to: "/panel/tables", icon: <FaDatabase style={{ fontSize: "20px" }}/>, label: "Datos" },
     { to: "/panel/enfermedades", icon: <FaShieldVirus style={{ fontSize: "20px" }}/>, label: "Enfermedades" },
     { to: "/panel/settings", icon: <FaCogs style={{ fontSize: "20px" }}/>, label: "Configuración" },
+    { to: "/panel/chart", icon: <FaFileContract style={{ fontSize: "20px" }}/>, label: "Reportes" },
     { to: "/", icon: <FaSignOutAlt style={{ fontSize: "20px" }}/>, label: "Cerrar Sesión", action: logout },
   ];
 
