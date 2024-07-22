@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
-import { FaTrash, FaPencilAlt, FaFilePdf } from 'react-icons/fa';
-import { Box, Button, Modal, TextField } from '@mui/material';
+import { FaTrash, FaPencilAlt, FaFilePdf, FaSearch } from 'react-icons/fa';
+import { Box, Button, InputAdornment, Modal, TextField } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; // Importa el CSS de react-toastify
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function TablesClientes() {
     const [datos, setDatos] = useState([]);
@@ -12,10 +12,25 @@ export default function TablesClientes() {
     const [datosFiltrados, setDatosFiltrados] = useState([]);
     const [open, setOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState({});
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         getTableData();
     }, []);
+
+    useEffect(() => {
+        filtrarDatos();
+    }, [searchTerm, datos]);
+
+    const filtrarDatos = () => {
+        const term = searchTerm.toLowerCase();
+        const filtered = datos.filter(dato =>
+            dato.nombre.toLowerCase().includes(term) ||
+            dato.documento.toLowerCase().includes(term) ||
+            dato.telefono.toLowerCase().includes(term)
+        );
+        setDatosFiltrados(filtered);
+    };
 
     const getTableData = async () => {
         const { data } = await clienteMongoAxios("/api/customers/getCustomers");
@@ -83,7 +98,7 @@ export default function TablesClientes() {
             const fecha = new Date();
             const año = fecha.getFullYear();
             const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-            const día = String(fecha.getDate()).padStart(2, '0'); 
+            const día = String(fecha.getDate()).padStart(2, '0');
             const fechaFormateada = `${día}-${mes}-${año}`;
 
             const clienteNombreMayusculas = cliente.nombre.toUpperCase();
@@ -124,6 +139,20 @@ export default function TablesClientes() {
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
             <ToastContainer />
+            <TextField
+                label="Buscar Cliente"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                margin="normal"
+                InputProps={{
+                    startAdornment: (
+                        <InputAdornment position="start">
+                            <FaSearch />
+                        </InputAdornment>
+                    ),
+                }}
+            />
+
             <div className="max-w-full overflow-x-auto">
                 <table className="w-full table-auto">
                     <thead>
@@ -172,17 +201,17 @@ export default function TablesClientes() {
                                         </p>
                                     </td>
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
+                                        <p className="inline-flex rounded-full bg-meta-3 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-3">
                                             {formatearPrecio(dato.total_payments)}
                                         </p>
                                     </td>
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
+                                        <p className="inline-flex rounded-full bg-meta-5 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-5">
                                             {formatearPrecio(dato.total_sales)}
                                         </p>
                                     </td>
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
+                                        <p className="inline-flex rounded-full bg-meta-1 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-1">
                                             {formatearPrecio(dato.deuda_actual)}
                                         </p>
                                     </td>
@@ -210,29 +239,29 @@ export default function TablesClientes() {
                     </tbody>
                 </table>
             </div>
-            <div className="flex justify-between items-center mt-6">
-                <button
-                    onClick={() => cambiarPagina(paginaActual - 1)}
-                    disabled={paginaActual === 1}
-                    className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
-                >
-                    Anterior
-                </button>
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500 dark:text-meta-4">
-                        Página {paginaActual} de {Math.ceil(datosFiltrados.length / datosPorPagina)}
-                    </span>
+            <div className="flex justify-between items-center mt-4 mb-4">
+                <div>
+                    <span>Mostrar {datosFiltrados.length} resultados</span>
                 </div>
-                <button
-                    onClick={() => cambiarPagina(paginaActual + 1)}
-                    disabled={paginaActual === Math.ceil(datosFiltrados.length / datosPorPagina)}
-                    className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
-                >
-                    Siguiente
-                </button>
+                <div>
+                    <button
+                        className="px-4 py-2 mx-1 bg-primary text-white rounded"
+                        onClick={() => cambiarPagina(paginaActual - 1)}
+                        disabled={paginaActual === 1}
+                    >
+                        Anterior
+                    </button>
+                    <button
+                        className="px-4 py-2 mx-1 bg-primary text-white rounded"
+                        onClick={() => cambiarPagina(paginaActual + 1)}
+                        disabled={paginaActual === Math.ceil(datosFiltrados.length / datosPorPagina)}
+                    >
+                        Siguiente
+                    </button>
+                </div>
             </div>
-            <Modal open={open} onClose={handleClose}>
-                <Box sx={{ ...modalStyle }}>
+            <Modal open={open} onClose={handleClose} >
+                <Box sx={{ ...modalStyle }} className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
                     <h2>Editar Registro</h2>
                     <TextField
                         margin="normal"
@@ -258,9 +287,9 @@ export default function TablesClientes() {
                         value={currentRecord.telefono}
                         onChange={handleChange}
                     />
-                    <Button onClick={handleSave} variant="contained" color="primary">
+                    <button onClick={handleSave} className="w-full mt-5 flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1">
                         Guardar
-                    </Button>
+                    </button>
                 </Box>
             </Modal>
         </div>
@@ -274,7 +303,7 @@ const modalStyle = {
     transform: 'translate(-50%, -50%)',
     width: 400,
     bgcolor: 'background.paper',
-    border: '2px solid #000',
+    borderRadius: 5,
     boxShadow: 24,
     p: 4,
 };

@@ -1,35 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
-import { FaEye, FaTrash, FaDownload, FaEdit } from 'react-icons/fa';
+import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Button,
   TextField,
   Select,
   MenuItem,
   InputLabel,
   FormControl,
+  Modal,
+  Box,
 } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaPencil } from 'react-icons/fa6';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 export default function TablesLote() {
   const [datos, setDatos] = useState([]);
   const [proveedores, setProveedores] = useState([]);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedLote, setSelectedLote] = useState(null);
   const [paginaActual, setPaginaActual] = useState(1);
+  const [datosFiltrados, setDatosFiltrados] = useState([]);
   const [datosPorPagina] = useState(7);
+  const [open, setOpen] = useState(false);
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [currentRecord, setCurrentRecord] = useState({});
+  const [fechaBusqueda, setFechaBusqueda] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getTableData();
     fetchProveedores();
   }, []);
+
+  useEffect(() => {
+    filtrarPorFecha();
+  }, [fechaBusqueda, datos, sortOrder]);
 
   const getTableData = async () => {
     const { data } = await clienteMongoAxios("/api/lote/getAll");
@@ -45,12 +50,24 @@ export default function TablesLote() {
     }
   };
 
+  const filtrarPorFecha = () => {
+    let datosFiltrados = fechaBusqueda ? datos.filter(dato => {
+      const fechaDato = new Date(dato.fecha);
+      return fechaDato.toDateString() === fechaBusqueda.toDateString();
+    }) : datos;
+
+    datosFiltrados = datosFiltrados.sort((a, b) => {
+      return sortOrder === 'asc' ? new Date(a.fecha) - new Date(b.fecha) : new Date(b.fecha) - new Date(a.fecha);
+    });
+    setDatosFiltrados(datosFiltrados);
+  };
+
   const formatearFecha = (fecha) => {
     const options = { day: '2-digit', month: 'long', year: 'numeric' };
     const date = new Date(fecha);
-    date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); // Ajusta la fecha a UTC
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
     return date.toLocaleDateString('es-CO', options);
-};
+  };
 
   const obtenerNombreProveedor = (proveedorId) => {
     const proveedor = proveedores.find((prov) => prov.id === proveedorId);
@@ -61,60 +78,45 @@ export default function TablesLote() {
     return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(precio);
   };
 
-  const eliminarLote = async (id) => {
+  const handleDelete = async (id) => {
     try {
       await clienteMongoAxios.delete(`/api/lote/delete/${id}`);
       setDatos(datos.filter(dato => dato.id !== id));
-      toast.success('Lote eliminado correctamente', {
-        position: toast.POSITION.TOP_CENTER,
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        className: 'bg-white dark:bg-boxdark'
-      });
+      setDatosFiltrados(datosFiltrados.filter(dato => dato.id !== id));
+      toast.success('Registro eliminado con éxito');
     } catch (error) {
-      console.log(error);
-      toast.error('Error al eliminar', {
-        position: toast.POSITION.TOP_CENTER,
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        className: 'bg-white dark:bg-boxdark text-black dark:text-white'
-      });
+      console.error("Error deleting data: ", error);
+      toast.error('Error al eliminar el registro');
     }
   };
 
-  const abrirModalEdicion = (lote) => {
-    setSelectedLote(lote);
-    setModalIsOpen(true);
+  const handleEdit = (dato) => {
+    setCurrentRecord(dato);
+    setOpen(true);
   };
 
-  const cerrarModal = () => {
-    setModalIsOpen(false);
-    setSelectedLote(null);
+  const handleClose = () => {
+    setOpen(false);
   };
 
-  const editarLote = async (e) => {
-    e.preventDefault();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentRecord({ ...currentRecord, [name]: value });
+  };
+
+  const handleDateChange = (newDate) => {
+    setCurrentRecord({ ...currentRecord, fecha: newDate });
+  };
+
+  const handleSave = async () => {
     try {
-      const { id, proveedor_id, descripcion, cantidad_aves, precio, fecha_llegada } = selectedLote;
-      await clienteMongoAxios.put(`/api/lote/update/${id}`, {
-        proveedor_id,
-        descripcion,
-        cantidad_aves,
-        precio,
-        fecha_llegada
-      });
+      await clienteMongoAxios.put(`/api/lote/update/${currentRecord.id}`, currentRecord);
       getTableData();
-      cerrarModal();
+      handleClose();
+      toast.success('Registro actualizado con éxito');
     } catch (error) {
-      console.error('Error al editar el lote', error);
+      console.error("Error updating data: ", error);
+      toast.error('Error al actualizar el registro');
     }
   };
 
@@ -123,9 +125,35 @@ export default function TablesLote() {
   };
 
 
+  const handleFechaBusquedaChange = (date) => {
+    setFechaBusqueda(date);
+  };
+
+  const limpiarFiltroFecha = () => {
+    setFechaBusqueda(null);
+  };
+
+
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <ToastContainer />
+      <div className="mb-4 flex justify-between items-center">
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <DatePicker
+            format='dd-MM-yyyy'
+            label="Buscar por Fecha"
+            value={fechaBusqueda}
+            onChange={handleFechaBusquedaChange}
+            renderInput={(params) => <TextField {...params} fullWidth />}
+          />
+        </LocalizationProvider>
+        <button
+          className="px-4 py-2 mx-1 bg-primary text-white rounded h-10"
+          onClick={limpiarFiltroFecha}
+        >
+          Limpiar Filtro
+        </button>
+      </div>
       <div className="max-w-full overflow-x-auto">
         <table className="w-full table-auto">
           <thead>
@@ -139,139 +167,152 @@ export default function TablesLote() {
             </tr>
           </thead>
           <tbody>
-            {datos.map((dato) => (
-              <tr key={dato.id}>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                <p className="inline-flex font-medium text-black dark:text-white">
-                    {obtenerNombreProveedor(dato.proveedor_id)}
-                  </p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                <p className="inline-flex font-medium text-black dark:text-white">
-                    {dato.descripcion}
-                  </p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                  <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
-                    {dato.cantidad_aves} Aves
-                  </p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                  <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
-                    {formatearPrecio(dato.precio)}
-                  </p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                <p className="inline-flex font-medium text-black dark:text-white">
-                    {formatearFecha(dato.fecha_llegada)}
-                  </p>
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                  <div className="flex items-center space-x-3.5">
-                  <button className="bg-primary hover:bg-primary-dark text-white rounded-full p-2" onClick={() => abrirModalEdicion(dato)}>
-                      <FaPencil />
-                    </button>
-                    <button className="bg-red hover:bg-primary-dark text-white rounded-full p-2" onClick={() => eliminarLote(dato.id)}>
-                      <FaTrash />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {datosFiltrados
+              .slice((paginaActual - 1) * datosPorPagina, paginaActual * datosPorPagina)
+              .map((dato) => (
+                <tr key={dato.id}>
+                  <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <p className="inline-flex font-medium text-black dark:text-white">
+                      {obtenerNombreProveedor(dato.proveedor_id)}
+                    </p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                    <p className="inline-flex font-medium text-black dark:text-white">
+                      {dato.descripcion}
+                    </p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                    <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
+                      {dato.cantidad_aves} Aves
+                    </p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                    <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
+                      {formatearPrecio(dato.precio)}
+                    </p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                    <p className="inline-flex font-medium text-black dark:text-white">
+                      {formatearFecha(dato.fecha_llegada)}
+                    </p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                    <div className="flex items-center space-x-3.5">
+                      <button
+                        onClick={() => handleEdit(dato)}
+                        className="bg-primary hover:bg-primary-dark text-white rounded-full p-2">
+                        <FaPencilAlt />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(dato.id)}
+                        className="bg-red hover:bg-primary-dark text-white rounded-full p-2">
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
-      <div className="flex justify-between items-center mt-6">
-        <button
-          onClick={() => cambiarPagina(paginaActual - 1)}
-          disabled={paginaActual === 1}
-          className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
-        >
-          Anterior
-        </button>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-500 dark:text-meta-4">
-            Página {paginaActual} de {Math.ceil(datos.length / datosPorPagina)}
-          </span>
+      <div className="flex justify-between items-center mt-4  mb-4">
+        <div>
+          <span>Mostrar {datosFiltrados.length} resultados</span>
         </div>
-        <button
-          onClick={() => cambiarPagina(paginaActual + 1)}
-          disabled={paginaActual === Math.ceil(datos.length / datosPorPagina)}
-          className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
-        >
-          Siguiente
-        </button>
+        <div>
+          <button
+            className="px-4 py-2 mx-1 bg-primary text-white rounded"
+            onClick={() => cambiarPagina(paginaActual - 1)}
+            disabled={paginaActual === 1}
+          >
+            Anterior
+          </button>
+          <button
+            className="px-4 py-2 mx-1 bg-primary text-white rounded"
+            onClick={() => cambiarPagina(paginaActual + 1)}
+            disabled={paginaActual === Math.ceil(datosFiltrados.length / datosPorPagina)}
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
 
-
-      {/* Modal de Edición */}
-      {modalIsOpen && selectedLote && (
-        <Dialog open={modalIsOpen} onClose={cerrarModal}>
-          <form onSubmit={editarLote}>
-            <DialogTitle>Editar Lote</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Edite los detalles del lote seleccionado.
-              </DialogContentText>
-              <FormControl fullWidth margin="normal">
-                <InputLabel>Proveedor</InputLabel>
-                <Select
-                  value={selectedLote.proveedor_id}
-                  onChange={(e) => setSelectedLote({ ...selectedLote, proveedor_id: e.target.value })}
-                >
-                  {proveedores.map(proveedor => (
-                    <MenuItem key={proveedor.id} value={proveedor.id}>{proveedor.nombre}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <TextField
-                margin="normal"
-                label="Descripción"
-                type="text"
-                fullWidth
-                value={selectedLote.descripcion}
-                onChange={(e) => setSelectedLote({ ...selectedLote, descripcion: e.target.value })}
-              />
-              <TextField
-                margin="normal"
-                label="Cantidad Aves"
-                type="number"
-                fullWidth
-                value={selectedLote.cantidad_aves}
-                onChange={(e) => setSelectedLote({ ...selectedLote, cantidad_aves: e.target.value })}
-              />
-              <TextField
-                margin="normal"
-                label="Precio"
-                type="number"
-                fullWidth
-                value={selectedLote.precio}
-                onChange={(e) => setSelectedLote({ ...selectedLote, precio: e.target.value })}
-              />
-              <TextField
-                margin="normal"
-                label="Fecha Llegada"
-                type="date"
-                fullWidth
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                value={selectedLote.fecha_llegada}
-                onChange={(e) => setSelectedLote({ ...selectedLote, fecha_llegada: e.target.value })}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={cerrarModal} color="primary">
-                Cancelar
-              </Button>
-              <Button type="submit" color="primary">
-                Guardar
-              </Button>
-            </DialogActions>
-          </form>
-        </Dialog>
-      )}
+      <Modal open={open} onClose={handleClose}>
+        <Box sx={{ ...modalStyle }} className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+          <h1 className='text-title-lg font-bold mb-5'>Editar Registro</h1>
+          <LocalizationProvider dateAdapter={AdapterDateFns} className='text-black dark:text-white w-full'>
+            <DatePicker
+              label="Fecha Llegada"
+              className='text-black dark:text-white w-full'
+              value={currentRecord.fecha_llegada}
+              onChange={handleDateChange}
+              renderInput={(params) => <TextField {...params} fullWidth margin="normal" className='text-black dark:text-white w-full' />}
+              format='dd-MM-yyyy'
+            />
+          </LocalizationProvider>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Proveedor</InputLabel>
+            <Select
+              name="proveedor_id"
+              value={currentRecord.proveedor_id || ''}
+              onChange={handleChange}
+              label="Proveedor"
+            >
+              {proveedores.map(proveedor => (
+                <MenuItem key={proveedor.id} value={proveedor.id}>
+                  {proveedor.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <input
+            className="mb-2 w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+            margin="normal"
+            fullWidth
+            label="Descripción Lote"
+            name="descripcion"
+            value={currentRecord.descripcion}
+            onChange={handleChange}
+          />
+          <input
+            className="mb-2 w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+            margin="normal"
+            fullWidth
+            type='number'
+            label="Cantidad Aves"
+            name="cantidad_aves"
+            value={currentRecord.cantidad_aves}
+            onChange={handleChange}
+          />
+          <input
+            className="mb-2 w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+            margin="normal"
+            fullWidth
+            type='number'
+            label="Precio"
+            name="precio"
+            value={currentRecord.precio}
+            onChange={handleChange}
+          />
+          <button onClick={handleSave} className="w-full mt-5 flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1">
+            Guardar
+          </button>
+        </Box>
+      </Modal>
     </div>
   );
 }
+
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  borderRadius: 5,
+  boxShadow: 24,
+  p: 4,
+};
+

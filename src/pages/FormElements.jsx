@@ -62,7 +62,7 @@ const FormElements = () => {
 
   return (
     <>
-      <Breadcrumb pageName="Formulario de Elementos" />
+      <Breadcrumb pageName="Formularios de Registros" />
 
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-2">
 

@@ -28,7 +28,7 @@ const Tables = () => {
 
   return (
     <> 
-      <Breadcrumb pageName="Datos" />
+      <Breadcrumb pageName="Datos Registrados" />
       <div className="flex flex-col gap-10">
         <div>
           <label className="mb-3 block text-black dark:text-white">

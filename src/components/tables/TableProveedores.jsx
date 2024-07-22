@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
-import { FaEye, FaTrash, FaDownload, FaPencilAlt } from 'react-icons/fa'; 
-import { Box, Button, Modal, TextField } from '@mui/material';
+import { FaEye, FaTrash, FaDownload, FaPencilAlt, FaSearch } from 'react-icons/fa';
+import { Box, Button, InputAdornment, Modal, TextField } from '@mui/material';
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -15,12 +15,26 @@ export default function TablesProveedores() {
     const [datosFiltrados, setDatosFiltrados] = useState([]);
     const [open, setOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState({});
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         getTableData();
     }, []);
 
-    
+    useEffect(() => {
+        filtrarDatos();
+    }, [searchTerm, datos]);
+
+    const filtrarDatos = () => {
+        const term = searchTerm.toLowerCase();
+        const filtered = datos.filter(dato =>
+            dato.nombre.toLowerCase().includes(term) ||
+            dato.documento.toLowerCase().includes(term) ||
+            dato.telefono.toLowerCase().includes(term)
+        );
+        setDatosFiltrados(filtered);
+    };
+
     const getTableData = async () => {
         try {
             const { data } = await clienteMongoAxios("/api/suppliers/getAll");
@@ -34,16 +48,6 @@ export default function TablesProveedores() {
 
     const cambiarPagina = (numeroPagina) => {
         setPaginaActual(numeroPagina);
-    };
-
-    // Función para filtrar datos por fecha
-    const filtrarPorFecha = () => {
-        if (fechaBusqueda === '') {
-            setDatosFiltrados(datos);
-        } else {
-            const filteredData = datos.filter(dato => formatearFecha(dato.fecha) === fechaBusqueda);
-            setDatosFiltrados(filteredData);
-        }
     };
 
     const handleDelete = async (id) => {
@@ -75,7 +79,7 @@ export default function TablesProveedores() {
     const handleDateChange = (newDate) => {
         setCurrentRecord({ ...currentRecord, fecha: newDate });
     };
-    
+
     const handleSave = async () => {
         try {
             await clienteMongoAxios.put(`/api/suppliers/update/${currentRecord.id}`, currentRecord);
@@ -92,6 +96,19 @@ export default function TablesProveedores() {
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
             <ToastContainer />
+            <TextField
+                label="Buscar Proveedor"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                margin="normal"
+                InputProps={{
+                    startAdornment: (
+                        <InputAdornment position="start">
+                            <FaSearch />
+                        </InputAdornment>
+                    ),
+                }}
+            />
             <div className="max-w-full overflow-x-auto">
                 <table className="w-full table-auto">
                     <thead>
@@ -111,26 +128,28 @@ export default function TablesProveedores() {
                         </tr>
                     </thead>
                     <tbody>
-                        {datos.map((dato) => (
-                            <tr key={dato.id}>
-                                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                                    <h5 className="font-medium text-black dark:text-white">
-                                        {dato.nombre}
-                                    </h5>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                    <p className="inline-flex rounded-full bg-meta-1 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-1">
-                                        {dato.documento}
-                                    </p>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                    <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
-                                        {dato.telefono}
-                                    </p>
-                                </td>
-                                <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                    <div className="flex items-center space-x-3.5">
-                                    <button
+                        {datosFiltrados
+                            .slice((paginaActual - 1) * datosPorPagina, paginaActual * datosPorPagina)
+                            .map((dato) => (
+                                <tr key={dato.id}>
+                                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                                        <h5 className="font-medium text-black dark:text-white">
+                                            {dato.nombre}
+                                        </h5>
+                                    </td>
+                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                        <p className="inline-flex rounded-full bg-meta-1 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-1">
+                                            {dato.documento}
+                                        </p>
+                                    </td>
+                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                        <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
+                                            {dato.telefono}
+                                        </p>
+                                    </td>
+                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                        <div className="flex items-center space-x-3.5">
+                                            <button
                                                 onClick={() => handleEdit(dato)}
                                                 className="bg-primary hover:bg-primary-dark text-white rounded-full p-2">
                                                 <FaPencilAlt />
@@ -140,36 +159,36 @@ export default function TablesProveedores() {
                                                 className="bg-red hover:bg-primary-dark text-white rounded-full p-2">
                                                 <FaTrash />
                                             </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
                     </tbody>
                 </table>
             </div>
-            <div className="flex justify-between items-center mt-6">
-                <button
-                    onClick={() => cambiarPagina(paginaActual - 1)}
-                    disabled={paginaActual === 1}
-                    className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
-                >
-                    Anterior
-                </button>
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500 dark:text-meta-4">
-                        Página {paginaActual} de {Math.ceil(datosFiltrados.length / datosPorPagina)}
-                    </span>
+            <div className="flex justify-between items-center mt-4 mb-4">
+                <div>
+                    <span>Mostrar {datosFiltrados.length} resultados</span>
                 </div>
-                <button
-                    onClick={() => cambiarPagina(paginaActual + 1)}
-                    disabled={paginaActual === Math.ceil(datosFiltrados.length / datosPorPagina)}
-                    className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
-                >
-                    Siguiente
-                </button>
+                <div>
+                    <button
+                        className="px-4 py-2 mx-1 bg-primary text-white rounded"
+                        onClick={() => cambiarPagina(paginaActual - 1)}
+                        disabled={paginaActual === 1}
+                    >
+                        Anterior
+                    </button>
+                    <button
+                        className="px-4 py-2 mx-1 bg-primary text-white rounded"
+                        onClick={() => cambiarPagina(paginaActual + 1)}
+                        disabled={paginaActual === Math.ceil(datosFiltrados.length / datosPorPagina)}
+                    >
+                        Siguiente
+                    </button>
+                </div>
             </div>
-            <Modal open={open} onClose={handleClose}>
-                <Box sx={{ ...modalStyle }}>
+            <Modal open={open} onClose={handleClose} >
+                <Box sx={{ ...modalStyle }} className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
                     <h2>Editar Proveedor</h2>
                     <TextField
                         margin="normal"
@@ -195,9 +214,9 @@ export default function TablesProveedores() {
                         value={currentRecord.telefono}
                         onChange={handleChange}
                     />
-                    <Button onClick={handleSave} variant="contained" color="primary">
+                    <button onClick={handleSave} className="w-full mt-5 flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1">
                         Guardar
-                    </Button>
+                    </button>
                 </Box>
             </Modal>
         </div>
@@ -211,7 +230,7 @@ const modalStyle = {
     transform: 'translate(-50%, -50%)',
     width: 400,
     bgcolor: 'background.paper',
-    borderRadius: 3,
+    borderRadius: 5,
     boxShadow: 24,
     p: 4,
 };

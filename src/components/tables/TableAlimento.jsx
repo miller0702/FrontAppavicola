@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
-import { FaEye, FaTrash, FaDownload, FaPencilAlt, FaSortUp, FaSortDown } from 'react-icons/fa'; // Importa los iconos necesarios
+import { FaEye, FaTrash, FaDownload, FaPencilAlt, FaSortUp, FaSortDown } from 'react-icons/fa';
 import { Box, Button, FormControl, InputLabel, MenuItem, Modal, Select, TextField } from '@mui/material';
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
@@ -11,7 +11,8 @@ export default function TablesAlimento() {
     const [datos, setDatos] = useState([]);
     const [paginaActual, setPaginaActual] = useState(1);
     const [datosPorPagina] = useState(7);
-    const [fechaBusqueda, setFechaBusqueda] = useState('');
+    const [fechaBusqueda, setFechaBusqueda] = useState(null);
+    const [busqueda, setBusqueda] = useState('');
     const [datosFiltrados, setDatosFiltrados] = useState([]);
     const [open, setOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState({});
@@ -24,8 +25,8 @@ export default function TablesAlimento() {
     }, []);
 
     useEffect(() => {
-        filtrarPorFecha();
-    }, [fechaBusqueda, datos, sortOrder]);
+        filtrarDatos();
+    }, [fechaBusqueda, busqueda, datos, sortOrder]);
 
     const getTableData = async () => {
         try {
@@ -40,7 +41,7 @@ export default function TablesAlimento() {
     const formatearFecha = (fecha) => {
         const options = { day: '2-digit', month: 'long', year: 'numeric' };
         const date = new Date(fecha);
-        date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); // Ajusta la fecha a UTC
+        date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
         return date.toLocaleDateString('es-CO', options);
     };
 
@@ -48,11 +49,27 @@ export default function TablesAlimento() {
         setPaginaActual(numeroPagina);
     };
 
-    const filtrarPorFecha = () => {
-        let datosFiltrados = fechaBusqueda === '' ? datos : datos.filter(dato => formatearFecha(dato.fecha) === fechaBusqueda);
+    const filtrarDatos = () => {
+        let datosFiltrados = datos;
+
+        if (fechaBusqueda) {
+            datosFiltrados = datosFiltrados.filter(dato =>
+                new Date(dato.fecha).toDateString() === new Date(fechaBusqueda).toDateString()
+            );
+        }
+
+        if (busqueda) {
+            datosFiltrados = datosFiltrados.filter(dato =>
+                Object.values(dato).some(value =>
+                    value.toString().toLowerCase().includes(busqueda.toLowerCase())
+                )
+            );
+        }
+
         datosFiltrados = datosFiltrados.sort((a, b) => {
             return sortOrder === 'asc' ? new Date(a.fecha) - new Date(b.fecha) : new Date(b.fecha) - new Date(a.fecha);
         });
+
         setDatosFiltrados(datosFiltrados);
     };
 
@@ -102,12 +119,10 @@ export default function TablesAlimento() {
         setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     };
 
-
     const obtenerNombreLote = (loteId) => {
         const lote = lotes.find((lot) => lot.id === loteId);
         return lote ? lote.descripcion : 'Desconocido';
     };
-
 
     const fetchLotes = async () => {
         try {
@@ -118,9 +133,34 @@ export default function TablesAlimento() {
         }
     };
 
+    const limpiarFiltroFecha = () => {
+        setFechaBusqueda(null);
+    };
+
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
             <ToastContainer />
+            <div className="flex justify-between mb-4">
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                        format='dd-MM-yyyy'
+                        label="Buscar por Fecha"
+                        value={fechaBusqueda}
+                        onChange={(newValue) => setFechaBusqueda(newValue)}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                            />
+                        )}
+                    />
+                </LocalizationProvider>
+                <button
+                    className="px-4 py-2 mx-1 bg-primary text-white rounded h-10"
+                    onClick={limpiarFiltroFecha}
+                >
+                    Limpiar Filtro
+                </button>
+            </div>
             <div className="max-w-full overflow-x-auto">
                 <table className="w-full table-auto">
                     <thead>
@@ -174,12 +214,14 @@ export default function TablesAlimento() {
                                         <div className="flex items-center space-x-3.5">
                                             <button
                                                 onClick={() => handleEdit(dato)}
-                                                className="bg-primary hover:bg-primary-dark text-white rounded-full p-2">
+                                                className="bg-primary hover:bg-primary-dark text-white rounded-full p-2"
+                                            >
                                                 <FaPencilAlt />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(dato.id)}
-                                                className="bg-red hover:bg-primary-dark text-white rounded-full p-2">
+                                                className="bg-danger hover:bg-danger-dark text-white rounded-full p-2"
+                                            >
                                                 <FaTrash />
                                             </button>
                                         </div>
@@ -189,43 +231,45 @@ export default function TablesAlimento() {
                     </tbody>
                 </table>
             </div>
-            <div className="flex justify-between items-center mt-6">
-                <button
-                    onClick={() => cambiarPagina(paginaActual - 1)}
-                    disabled={paginaActual === 1}
-                    className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
-                >
-                    Anterior
-                </button>
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500 dark:text-meta-4">
-                        Página {paginaActual} de {Math.ceil(datosFiltrados.length / datosPorPagina)}
-                    </span>
+            <div className="flex justify-between items-center mt-4 mb-4">
+                <div>
+                    <span>Mostrar {datosFiltrados.length} resultados</span>
                 </div>
-                <button
-                    onClick={() => cambiarPagina(paginaActual + 1)}
-                    disabled={paginaActual === Math.ceil(datosFiltrados.length / datosPorPagina)}
-                    className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
-                >
-                    Siguiente
-                </button>
+                <div>
+                    <button
+                        className="px-4 py-2 mx-1 bg-primary text-white rounded"
+                        onClick={() => cambiarPagina(paginaActual - 1)}
+                        disabled={paginaActual === 1}
+                    >
+                        Anterior
+                    </button>
+                    <button
+                        className="px-4 py-2 mx-1 bg-primary text-white rounded"
+                        onClick={() => cambiarPagina(paginaActual + 1)}
+                        disabled={paginaActual === Math.ceil(datosFiltrados.length / datosPorPagina)}
+                    >
+                        Siguiente
+                    </button>
+                </div>
             </div>
             <Modal open={open} onClose={handleClose}>
-                <Box sx={{ ...modalStyle }}>
-                    <h2>Editar Registro</h2>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <Box sx={{ ...modalStyle }} className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+                    <h1 className='text-title-lg font-bold mb-5'>Editar Registro</h1>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}
+                        className='text-black dark:text-white w-full'>
                         <DatePicker
                             label="Fecha"
-                            className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                            className='text-black dark:text-white w-full'
                             value={currentRecord.fecha}
                             onChange={handleDateChange}
-                            renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
+                            renderInput={(params) => <TextField {...params} fullWidth margin="normal" className='text-black dark:text-white' />}
                             format='dd-MM-yyyy'
                         />
                     </LocalizationProvider>
                     <FormControl fullWidth margin="normal">
                         <InputLabel>Lote</InputLabel>
                         <Select
+                            className='text-black dark:text-white'
                             name="lote_id"
                             value={currentRecord.lote_id || ''}
                             onChange={handleChange}
@@ -238,15 +282,16 @@ export default function TablesAlimento() {
                             ))}
                         </Select>
                     </FormControl>
-                    <TextField
+                    <input
+                        className="mb-2 w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                         margin="normal"
-                        fullWidth
                         label="Hembras"
                         name="cantidadhembra"
                         value={currentRecord.cantidadhembra}
                         onChange={handleChange}
                     />
-                    <TextField
+                    <input
+                        className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                         margin="normal"
                         fullWidth
                         label="Machos"
@@ -254,9 +299,9 @@ export default function TablesAlimento() {
                         value={currentRecord.cantidadmacho}
                         onChange={handleChange}
                     />
-                    <Button onClick={handleSave} variant="contained" color="primary">
+                    <button onClick={handleSave} className="w-full mt-5 flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1">
                         Guardar
-                    </Button>
+                    </button>
                 </Box>
             </Modal>
         </div>
@@ -270,7 +315,7 @@ const modalStyle = {
     transform: 'translate(-50%, -50%)',
     width: 400,
     bgcolor: 'background.paper',
-    border: '2px solid #000',
+    borderRadius: 5,
     boxShadow: 24,
     p: 4,
 };

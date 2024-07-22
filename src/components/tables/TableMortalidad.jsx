@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import clienteMongoAxios from "../../config/clienteMongoAxios";
 import { FaEye, FaPencilAlt, FaTrash, FaSortUp, FaSortDown } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
@@ -10,13 +10,14 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 export default function TableMortalidad() {
   const [datos, setDatos] = useState([]);
   const [paginaActual, setPaginaActual] = useState(1);
-  const [datosPorPagina] = useState(7); // Número de registros por página
-  const [fechaBusqueda, setFechaBusqueda] = useState('');
+  const [datosPorPagina, setDatosPorPagina] = useState(7);
+  const [fechaBusqueda, setFechaBusqueda] = useState(null);
   const [datosFiltrados, setDatosFiltrados] = useState([]);
   const [open, setOpen] = useState(false);
   const [currentRecord, setCurrentRecord] = useState({});
   const [sortOrder, setSortOrder] = useState('desc');
   const [lotes, setLotes] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getTableData();
@@ -27,7 +28,8 @@ export default function TableMortalidad() {
     filtrarPorFecha();
   }, [fechaBusqueda, datos, sortOrder]);
 
-  const getTableData = async () => {
+  const getTableData = useCallback(async () => {
+    setLoading(true);
     try {
       const { data } = await clienteMongoAxios("/api/mortality/getAll");
       setDatos(data);
@@ -35,29 +37,44 @@ export default function TableMortalidad() {
     } catch (error) {
       console.error("Error fetching data: ", error);
       toast.error('Error al obtener datos');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
+
+  const fetchLotes = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await clienteMongoAxios.get('/api/lote/getAll');
+      setLotes(response.data);
+    } catch (error) {
+      console.error('Error al obtener la lista de lotes', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const formatearFecha = (fecha) => {
     const options = { day: '2-digit', month: 'long', year: 'numeric' };
     const date = new Date(fecha);
-    date.setMinutes(date.getMinutes() + date.getTimezoneOffset()); // Ajusta la fecha a UTC
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
     return date.toLocaleDateString('es-CO', options);
-};
-
-  const cambiarPagina = (numeroPagina) => {
-    setPaginaActual(numeroPagina);
   };
 
   const filtrarPorFecha = () => {
-    let datosFiltrados = fechaBusqueda === '' ? datos : datos.filter(dato => formatearFecha(dato.fecha) === fechaBusqueda);
+    let datosFiltrados = fechaBusqueda ? datos.filter(dato => {
+      const fechaDato = new Date(dato.fecha);
+      return fechaDato.toDateString() === fechaBusqueda.toDateString();
+    }) : datos;
+
     datosFiltrados = datosFiltrados.sort((a, b) => {
       return sortOrder === 'asc' ? new Date(a.fecha) - new Date(b.fecha) : new Date(b.fecha) - new Date(a.fecha);
     });
     setDatosFiltrados(datosFiltrados);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
+    setLoading(true);
     try {
       await clienteMongoAxios.delete(`/api/mortality/delete/${id}`);
       setDatos(datos.filter(dato => dato.id !== id));
@@ -66,8 +83,10 @@ export default function TableMortalidad() {
     } catch (error) {
       console.error("Error deleting data: ", error);
       toast.error('Error al eliminar el registro');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [datos, datosFiltrados]);
 
   const handleEdit = (dato) => {
     setCurrentRecord(dato);
@@ -88,6 +107,7 @@ export default function TableMortalidad() {
   };
 
   const handleSave = async () => {
+    setLoading(true);
     try {
       await clienteMongoAxios.put(`/api/mortality/update/${currentRecord.id}`, currentRecord);
       getTableData();
@@ -96,6 +116,8 @@ export default function TableMortalidad() {
     } catch (error) {
       console.error("Error updating data: ", error);
       toast.error('Error al actualizar el registro');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -108,18 +130,38 @@ export default function TableMortalidad() {
     return lote ? lote.descripcion : 'Desconocido';
   };
 
-  const fetchLotes = async () => {
-    try {
-      const response = await clienteMongoAxios.get('/api/lote/getAll');
-      setLotes(response.data);
-    } catch (error) {
-      console.error('Error al obtener la lista de lotes', error);
-    }
+  const cambiarPagina = (nuevaPagina) => {
+    setPaginaActual(nuevaPagina);
+  };
+
+  const handleFechaBusquedaChange = (date) => {
+    setFechaBusqueda(date);
+  };
+
+  const limpiarFiltroFecha = () => {
+    setFechaBusqueda(null);
   };
 
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <ToastContainer />
+      <div className="mb-4 flex justify-between items-center">
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <DatePicker
+            format='dd-MM-yyyy'
+            label="Buscar por Fecha"
+            value={fechaBusqueda}
+            onChange={handleFechaBusquedaChange}
+            renderInput={(params) => <TextField {...params} fullWidth />}
+          />
+        </LocalizationProvider>
+        <button
+          className="px-4 py-2 mx-1 bg-primary text-white rounded h-10"
+          onClick={limpiarFiltroFecha}
+        >
+          Limpiar Filtro
+        </button>
+      </div>
       <div className="max-w-full overflow-x-auto">
         <table className="w-full table-auto">
           <thead>
@@ -188,66 +230,68 @@ export default function TableMortalidad() {
           </tbody>
         </table>
       </div>
-      <div className="flex justify-between items-center mt-6">
-        <button
-          onClick={() => cambiarPagina(paginaActual - 1)}
-          disabled={paginaActual === 1}
-          className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
-        >
-          Anterior
-        </button>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-500 dark:text-meta-4">
-            Página {paginaActual} de {Math.ceil(datosFiltrados.length / datosPorPagina)}
-          </span>
+      <div className="flex justify-between items-center mt-4  mb-4">
+        <div>
+          <span>Mostrar {datosFiltrados.length} resultados</span>
         </div>
-        <button
-          onClick={() => cambiarPagina(paginaActual + 1)}
-          disabled={paginaActual === Math.ceil(datosFiltrados.length / datosPorPagina)}
-          className="py-2 px-4 bg-primary text-white font-medium rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-50"
-        >
-          Siguiente
-        </button>
+        <div>
+          <button
+            className="px-4 py-2 mx-1 bg-primary text-white rounded"
+            onClick={() => cambiarPagina(paginaActual - 1)}
+            disabled={paginaActual === 1}
+          >
+            Anterior
+          </button>
+          <button
+            className="px-4 py-2 mx-1 bg-primary text-white rounded"
+            onClick={() => cambiarPagina(paginaActual + 1)}
+            disabled={paginaActual === Math.ceil(datosFiltrados.length / datosPorPagina)}
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
 
       <Modal open={open} onClose={handleClose}>
-        <Box sx={{ ...modalStyle }}>
-          <h2>Editar Registro</h2>
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <Box sx={{ ...modalStyle }} className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+          <h1 className='text-title-lg font-bold mb-5'>Editar Registro</h1>
+          <LocalizationProvider dateAdapter={AdapterDateFns}
+            className='text-black dark:text-white w-full'>
             <DatePicker
               label="Fecha"
-              className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+              className='text-black dark:text-white w-full'
               value={currentRecord.fecha}
               onChange={handleDateChange}
-              renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
+              renderInput={(params) => <TextField {...params} fullWidth margin="normal" className='text-black dark:text-white' />}
               format='dd-MM-yyyy'
             />
           </LocalizationProvider>
           <FormControl fullWidth margin="normal">
             <InputLabel>Lote</InputLabel>
             <Select
+              className='text-black dark:text-white'
               name="lote_id"
               value={currentRecord.lote_id || ''}
               onChange={handleChange}
               label="Lote"
             >
               {lotes.map(lote => (
-                <MenuItem
-                  key={lote.id} value={lote.id}>
+                <MenuItem key={lote.id} value={lote.id}>
                   {lote.descripcion}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          <TextField
+          <input
+            className="mb-2 w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
             margin="normal"
-            fullWidth
             label="Hembras"
             name="cantidadhembra"
             value={currentRecord.cantidadhembra}
             onChange={handleChange}
           />
-          <TextField
+          <input
+            className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
             margin="normal"
             fullWidth
             label="Machos"
@@ -255,9 +299,9 @@ export default function TableMortalidad() {
             value={currentRecord.cantidadmacho}
             onChange={handleChange}
           />
-          <Button onClick={handleSave} variant="contained" color="primary">
+          <button onClick={handleSave} className="w-full mt-5 flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1">
             Guardar
-          </Button>
+          </button>
         </Box>
       </Modal>
     </div>
@@ -271,7 +315,7 @@ const modalStyle = {
   transform: 'translate(-50%, -50%)',
   width: 400,
   bgcolor: 'background.paper',
-  border: '2px solid #000',
+  borderRadius: 5,
   boxShadow: 24,
   p: 4,
 };
