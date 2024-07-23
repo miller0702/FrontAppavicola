@@ -140,11 +140,19 @@ export default function TablesFacturas() {
                 throw new Error(`Error al generar la factura: ${response.statusText}`);
             }
 
+            const dato = datos.find((dato) => dato.id === id);
+            const fecha = new Date(dato.fecha);
+            const año = fecha.getFullYear();
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            const día = String(fecha.getDate()).padStart(2, '0');
+            const fechaFormateada = `${día}-${mes}-${año}`;            
+            const clienteNombreMayusculas = obtenerNombreCliente(dato.cliente_id).toUpperCase();
+
             const blob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `factura_${id}.pdf`;
+            a.download = `FACTURA_${clienteNombreMayusculas}_${fechaFormateada}.pdf`;
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -256,7 +264,7 @@ export default function TablesFacturas() {
                         className="px-4 py-4 bg-primary text-white rounded"
                         onClick={limpiarFiltroFecha}
                     >
-                        <FaEraser/>
+                        <FaEraser />
                     </button>
                 </div>
             </div>

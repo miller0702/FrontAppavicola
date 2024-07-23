@@ -2,8 +2,7 @@ import React from "react";
 import useAuth from "../hooks/useAuth";
 
 export default function Factura({ factura, encriptado}) {
-  // console.log(encriptado)
-  // console.log(factura)
+
   const {numeroFactura, cliente, email, fecha, vendedor, cantidadAves, cantidadKilos, precioKilo} = factura
 
   const pagar = () => {

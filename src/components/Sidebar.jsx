@@ -56,7 +56,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   }, [sidebarExpanded]);
 
   const menuItems = [
-    { to: "/panel", icon: <FaHouse style={{ fontSize: "20px" }}/>, label: "Home" },
+    { to: "/panel", icon: <FaHouse style={{ fontSize: "20px" }}/>, label: "Inicio" },
     { to: "/panel/calendar", icon: <FaCalendar style={{ fontSize: "20px" }}/>, label: "Calendario" },
     { to: "/panel/forms", icon: <FaClipboardList style={{ fontSize: "20px" }}/>, label: "Registros" },
     { to: "/panel/tables", icon: <FaDatabase style={{ fontSize: "20px" }}/>, label: "Datos" },

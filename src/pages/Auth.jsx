@@ -1,15 +1,16 @@
 import React, { useState } from "react";
-import "../styles/Auth.css";
 import logo from "../assets/images/LogoPlataforma.png";
+import fondo from "../assets/images/fondo_login.jpg";
 import { Link, useNavigate } from "react-router-dom";
 import clienteMongoAxios from "../config/clienteMongoAxios";
 import useAuth from "../hooks/useAuth";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FaFacebookF, FaInstagram, FaTwitter } from "react-icons/fa";
 
 export default function Auth() {
 
-  const {setAuth, pagoState, setPagoState} = useAuth()
+  const { setAuth, pagoState, setPagoState } = useAuth()
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +20,7 @@ export default function Auth() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if([email, password].includes("")){
+    if ([email, password].includes("")) {
       toast.error('Los campos no pueden estar vacios', {
         position: "top-right",
         autoClose: 4000,
@@ -36,7 +37,7 @@ export default function Auth() {
     try {
       const data = await clienteMongoAxios.post("/api/users/login", { email, password })
       localStorage.setItem('token', data.data.data.session_token)
-      setAuth({token: data.data.data.session_token})
+      setAuth({ token: data.data.data.session_token })
 
       toast.success('Autenticado correctamente', {
         position: "top-right",
@@ -65,70 +66,47 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex w-full flex-col items-center">
-      <img className="logo" src={logo} />
-      <form
-        className="bg-stone shadow-lg rounded-md pt-5 px-10 w-1/4"
-        onSubmit={handleSubmit}
-      >
-        <div className="my-5">
-          <label
-            htmlFor="email"
-            className="uppercase tx-zinc block text-xl font-bold"
-          >
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            placeholder="Email de Registro"
-            className="w-full mt-2 p-2 border rounded-md bg-gray-50"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
+    <div className="container-wrapper">
+      <div className="auth-container bg-white dark:bg-boxdark">
+        <div className="auth-form-container">
+        <img src={logo} alt="Logo Auth" className="logo"/>
+          <h1 className="text-title-lg font-bold mb-9">Inicio de Sesión</h1>
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <input
+                id="email"
+                type="email"
+                placeholder=" "
+                className="form-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <label htmlFor="email" className="form-label">Email</label>
+            </div>
+            <div className="form-group">
+              <input
+                id="password"
+                type="password"
+                placeholder=" "
+                className="form-input"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <label htmlFor="password" className="form-label">Contraseña</label>
+            </div>
 
-        <div className="my-5">
-          <label
-            htmlFor="password"
-            className="uppercase tx-zinc block text-xl font-bold"
-          >
-            Contraseña
-          </label>
-          <input
-            id="password"
-            type="password"
-            placeholder="Contraseña"
-            className="w-full mt-2 p-2 border rounded-md bg-gray-50"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+            <div className="form-group">
+              <button className="submit-button" type="submit">Iniciar Sesión</button>
+            </div>
+            <div className="form-group">
+            </div>
+          </form>
+          <ToastContainer />
         </div>
-        <div className="flex justify-center my-5">
-          <button
-            className="bg-orange tx-zinc p-2 text-xl font-semibold rounded-md"
-            type="submit"
-          >
-            Iniciar Sesión
-          </button>
+        <div className="auth-image-container">
+          <img src={fondo} alt="Auth Background" className="auth-image" />
         </div>
-
-        <nav className="my-5">
-          <Link
-            className="block text-center my-5 tx-zinc text-xs uppercase"
-            to="/registrar"
-          >
-            ¿No tienes una cuenta? Registrate
-          </Link>
-          <Link
-            className="block text-center my-5 tx-zinc text-xs uppercase"
-            to="/pagos"
-          >
-            Cancela tu Factura
-          </Link>
-        </nav>
-      </form>
-      <ToastContainer />
+      </div>
     </div>
   );
 }

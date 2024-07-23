@@ -73,11 +73,19 @@ export default function TablesAbonos() {
                 throw new Error(`Error al generar la abono: ${response.statusText}`);
             }
     
+            const dato = datos.find((dato) => dato.id === id);
+            const fecha = new Date(dato.fecha);
+            const año = fecha.getFullYear();
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            const día = String(fecha.getDate()).padStart(2, '0');
+            const fechaFormateada = `${día}-${mes}-${año}`;            
+            const clienteNombreMayusculas = obtenerNombreCliente(dato.cliente_id).toUpperCase();
+
             const blob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `abono_${id}.pdf`;
+            a.download = `ABONO_${clienteNombreMayusculas}_${fechaFormateada}.pdf`;
             document.body.appendChild(a);
             a.click();
             a.remove();
