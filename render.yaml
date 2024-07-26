@@ -1,0 +1,8 @@
+services:
+  - type: static
+    name: softavicola
+    buildCommand: npm run build
+    publishDir: build
+    routes:
+      - src: /*
+        dest: /index.html
