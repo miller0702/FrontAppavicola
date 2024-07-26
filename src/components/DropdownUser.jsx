@@ -107,6 +107,7 @@ const DropdownUser = () => {
           }`}
       >
         <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
+          {usuario && usuario.rol === 1 &&
           <li>
             <Link
               to="/panel/profile"
@@ -116,7 +117,7 @@ const DropdownUser = () => {
               Mi Perfil
             </Link>
           </li>
-
+        }
           <li>
             <Link
               to="/panel/settings"
