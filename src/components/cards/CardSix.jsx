@@ -30,7 +30,7 @@ const CardSix = () => {
       </div>
       <div className="flex-grow">
         <h4 className="font-bold text-black dark:text-white">
-          Lote
+          Lote Actual
         </h4>
         <h1 className="text-title-lg font-bold text-black dark:text-white" style={{ fontSize: 30 }}>
           {totalBajas} Aves

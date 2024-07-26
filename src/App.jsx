@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthProvider'
 import AuthLayout from './layouts/AuthLayout'
@@ -28,20 +27,20 @@ function App() {
 
           <Route path='/panel' element={<RutaProtegida />}>
             <Route index element={<ECommerce />}/>
-            {routes.map((routes, index) => {
-            const { path, component: Component } = routes;
-            return (
-              <Route
-                key={index}
-                path={path}
-                element={
-                  <Suspense fallback={<Loader />}>
-                    <Component />
-                  </Suspense>
-                }
-              />
-            );
-          })}
+            {routes.map((route, index) => {
+              const { path, component: Component } = route;
+              return (
+                <Route
+                  key={index}
+                  path={path}
+                  element={
+                    <Suspense fallback={<Loader />}>
+                      <Component />
+                    </Suspense>
+                  }
+                />
+              );
+            })}
           </Route>
         </Routes>
       </AuthProvider>
@@ -49,4 +48,4 @@ function App() {
   )
 }
 
-export default App
+export default App;

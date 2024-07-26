@@ -79,7 +79,7 @@ const options = {
   },
   xaxis: {
     type: 'category',
-    categories: [], // Deja esto vacío inicialmente, se llenará con las fechas dinámicas
+    categories: [],
     axisBorder: {
       show: false,
     },

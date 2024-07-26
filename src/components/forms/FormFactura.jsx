@@ -15,9 +15,6 @@ export default function FormFactura() {
   const [selectedClienteId, setSelectedClienteId] = useState('');
   const [lotes, setLotes] = useState([]);
   const [selectedLoteId, setSelectedLoteId] = useState('');
-  const { name, _id } = usuario[0];
-  const [vendedorId, setVendedorId] = useState(_id || '');
-  const [vendedorNombre, setVendedorNombre] = useState(name || '');
   const [cantidadAves, setCantidadAves] = useState(0);
   const [canastasVacias, setCanastasVacias] = useState([]);
   const [canastasLlenas, setCanastasLlenas] = useState([]);
@@ -93,7 +90,7 @@ export default function FormFactura() {
     const numeroFactura = await generarNumeroAleatorio();
     try {
       const totalKilos = totalCanastasLlenas - totalCanastasVacias;
-  
+
       const factura = {
         lote_id: selectedLoteId,
         cliente_id: selectedClienteId,
@@ -106,12 +103,12 @@ export default function FormFactura() {
         numerofactura: numeroFactura,
         totalkilos: totalKilos,
       };
-  
+
       const { data } = await clienteMongoAxios.post('/api/sale/register', factura);
-      
+
       if (data && data.success) {
         console.log(data);
-  
+
         toast.success('Factura Registrada con Éxito', {
           position: toast.POSITION.TOP_CENTER,
           autoClose: 3000,
@@ -122,7 +119,7 @@ export default function FormFactura() {
           progress: undefined,
           className: 'bg-white dark:bg-boxdark'
         });
-  
+
         setSelectedClienteId('');
         setSelectedLoteId('');
         setCantidadAves(0);
@@ -150,7 +147,7 @@ export default function FormFactura() {
       });
     }
   };
-  
+
 
   useEffect(() => {
     const fetchClientes = async () => {
@@ -187,7 +184,7 @@ export default function FormFactura() {
       <div>
         <label className="mb-3 block text-black dark:text-white"><FaCalendar className="inline-block mr-2" /> Fecha</label>
         <div className="relative">
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
               label="Seleccione la fecha"
               value={fecha}
@@ -229,16 +226,6 @@ export default function FormFactura() {
           ))}
         </select>
       </div>
-      <div>
-        <label className="mb-3 block text-black dark:text-white"><FaUser className="inline-block mr-2" /> Vendedor</label>
-        <input
-          className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-          type="text"
-          value={vendedorNombre}
-          disabled
-        />
-      </div>
-
       <div className="mb-4">
         <label className="mb-3 block text-black dark:text-white"><FaSortNumericDown className="inline-block mr-2" /> CantidadAves</label>
         <input
@@ -275,7 +262,7 @@ export default function FormFactura() {
             size="small"
             className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           />
-          <button onClick={() => addCanasta('vacia')}  className='rounded py-3 px-6 font-medium text-gray bg-primary'>
+          <button onClick={() => addCanasta('vacia')} className='rounded py-3 px-6 font-medium text-gray bg-primary'>
             <FaPlus />
           </button>
         </div>
@@ -307,7 +294,7 @@ export default function FormFactura() {
             size="small"
             className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           />
-          <button onClick={() => addCanasta('llena')}  className='rounded py-3 px-6 font-medium text-gray bg-primary'>
+          <button onClick={() => addCanasta('llena')} className='rounded py-3 px-6 font-medium text-gray bg-primary'>
             <FaPlus />
           </button>
         </div>
@@ -334,7 +321,7 @@ export default function FormFactura() {
         </div>
       </div>
 
-      <button onClick={registrar}  className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1">Registrar</button>
+      <button onClick={registrar} className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1">Registrar</button>
     </>
   );
 }

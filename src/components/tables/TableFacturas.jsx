@@ -7,10 +7,12 @@ import { InputAdornment, TextField } from '@mui/material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import 'react-toastify/dist/ReactToastify.css';
+import useAuth from '../../hooks/useAuth';
 
 export default function TablesFacturas() {
     const [datos, setDatos] = useState([]);
     const [clientes, setClientes] = useState([]);
+    const [lotes, setLotes] = useState([]);
     const [usuarios, setUsuarios] = useState([]);
     const [paginaActual, setPaginaActual] = useState(1);
     const [datosFiltrados, setDatosFiltrados] = useState([]);
@@ -20,14 +22,13 @@ export default function TablesFacturas() {
     const [busqueda, setBusqueda] = useState('');
     const [sortOrder, setSortOrder] = useState('desc');
 
-    useEffect(() => {
-        filtrarDatos();
-    }, [searchTerm, datos]);
+    const { usuario } = useAuth();
 
     useEffect(() => {
         getTableData();
         fetchClientes();
         fetchUsuarios();
+        fetchLotes();
     }, []);
 
     useEffect(() => {
@@ -39,25 +40,53 @@ export default function TablesFacturas() {
     }, [datos]);
 
     const filtrarDatos = () => {
-        const term = searchTerm.toLowerCase();
-        const filtered = datos.filter(dato => {
-            const cliente = clientes.find(cliente => cliente.id === dato.cliente_id);
-            const nombre = cliente ? cliente.nombre.toLowerCase() : '';
-            const telefono = cliente ? cliente.telefono.toLowerCase() : '';
-            return nombre.includes(term) || telefono.includes(term);
-        });
+        let filtered = datos;
+
+        if (usuario && usuario.rol === 3) {
+            const telefonoUsuario = usuario.phone;
+
+            filtered = filtered.filter(dato => {
+                const cliente = clientes.find(cliente => cliente.id === dato.cliente_id);
+                const telefonoCliente = cliente ? cliente.telefono : '';
+                return telefonoCliente === telefonoUsuario;
+            });
+        }
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(dato => {
+                const cliente = clientes.find(cliente => cliente.id === dato.cliente_id);
+                const nombre = cliente ? cliente.nombre.toLowerCase() : '';
+                const telefono = cliente ? cliente.telefono : '';
+                return nombre.includes(term) || telefono.includes(term);
+            });
+        }
+
         setDatosFiltrados(filtered);
     };
 
+    useEffect(() => {
+        filtrarDatos();
+    }, [datos, searchTerm, usuario]);
+
     const filtrarDatosFecha = () => {
         let datosFiltrados = datos;
-
+    
+        if (usuario && usuario.rol === 3) {
+            const telefonoUsuario = usuario.phone;
+    
+            datosFiltrados = datosFiltrados.filter(dato => {
+                const cliente = clientes.find(cliente => cliente.id === dato.cliente_id);
+                const telefonoCliente = cliente ? cliente.telefono : '';
+                return telefonoCliente === telefonoUsuario;
+            });
+        }
+    
         if (fechaBusqueda) {
             datosFiltrados = datosFiltrados.filter(dato =>
                 new Date(dato.fecha).toDateString() === new Date(fechaBusqueda).toDateString()
             );
         }
-
+    
         if (busqueda) {
             datosFiltrados = datosFiltrados.filter(dato =>
                 Object.values(dato).some(value =>
@@ -65,13 +94,14 @@ export default function TablesFacturas() {
                 )
             );
         }
-
+    
         datosFiltrados = datosFiltrados.sort((a, b) => {
             return sortOrder === 'asc' ? new Date(a.fecha) - new Date(b.fecha) : new Date(b.fecha) - new Date(a.fecha);
         });
-
+    
         setDatosFiltrados(datosFiltrados);
     };
+    
 
     const getTableData = async () => {
         try {
@@ -88,6 +118,15 @@ export default function TablesFacturas() {
             setClientes(response.data);
         } catch (error) {
             console.error('Error al obtener la lista de clientes', error);
+        }
+    };
+
+    const fetchLotes = async () => {
+        try {
+            const response = await clienteMongoAxios.get('/api/lote/getAll');
+            setLotes(response.data);
+        } catch (error) {
+            console.error('Error al obtener la lista de lotes', error);
         }
     };
 
@@ -115,6 +154,11 @@ export default function TablesFacturas() {
     const obtenerNombreCliente = (clienteId) => {
         const cliente = clientes.find((prov) => prov.id === clienteId);
         return cliente ? cliente.nombre : 'Desconocido';
+    };
+
+    const obtenerNombreLote = (loteId) => {
+        const lote = lotes.find((prov) => prov.id === loteId);
+        return lote ? lote.descripcion : 'Desconocido';
     };
 
     const obtenerTelefonoCliente = (clienteId) => {
@@ -145,7 +189,7 @@ export default function TablesFacturas() {
             const año = fecha.getFullYear();
             const mes = String(fecha.getMonth() + 1).padStart(2, '0');
             const día = String(fecha.getDate()).padStart(2, '0');
-            const fechaFormateada = `${día}-${mes}-${año}`;            
+            const fechaFormateada = `${día}-${mes}-${año}`;
             const clienteNombreMayusculas = obtenerNombreCliente(dato.cliente_id).toUpperCase();
 
             const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -235,7 +279,9 @@ export default function TablesFacturas() {
 
             <ToastContainer />
             <div className="flex justify-between items-center mb-4">
-                <TextField
+
+                {usuario && usuario.rol === 1 && (
+                    <TextField
                     label="Buscar Cliente"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -248,6 +294,8 @@ export default function TablesFacturas() {
                         ),
                     }}
                 />
+                
+                )}
                 <div className="flex items-center space-x-2">
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DatePicker
@@ -268,9 +316,6 @@ export default function TablesFacturas() {
                     </button>
                 </div>
             </div>
-
-
-
             <div className="max-w-full overflow-x-auto">
                 <table className="w-full table-auto">
                     <thead>
@@ -278,12 +323,22 @@ export default function TablesFacturas() {
                             <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
                                 Fecha
                             </th>
-                            <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white">
-                                Cliente
-                            </th>
-                            <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white">
-                                Teléfono
-                            </th>
+                            {usuario && usuario.rol === 3 && (
+                                <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                                    Lote
+                                </th>
+                            )}
+                            {usuario && usuario.rol === 1 && (
+                                <>
+                                    <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white">
+                                        Cliente
+                                    </th>
+
+                                    <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white">
+                                        Teléfono
+                                    </th>
+                                </>
+                            )}
                             <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white">
                                 Cantidad Aves
                             </th>
@@ -311,16 +366,27 @@ export default function TablesFacturas() {
                                             {formatearFecha(dato.fecha)}
                                         </h5>
                                     </td>
-                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="inline-flex rounded-full bg-success bg-opacity-10 py-1 px-3 text-sm font-medium text-success">
-                                            {obtenerNombreCliente(dato.cliente_id)}
-                                        </p>
-                                    </td>
-                                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="font-medium text-black dark:text-white">
-                                            {obtenerTelefonoCliente(dato.cliente_id)}
-                                        </p>
-                                    </td>
+                                    {usuario && usuario.rol === 3 && (
+                                        <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                            <p className="inline-flex rounded-full bg-success bg-opacity-10 py-1 px-3 text-sm font-medium text-success">
+                                                {obtenerNombreLote(dato.lote_id)}
+                                            </p>
+                                        </td>
+                                    )}
+                                    {usuario && usuario.rol === 1 && (
+                                        <>
+                                            <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                                <p className="inline-flex rounded-full bg-success bg-opacity-10 py-1 px-3 text-sm font-medium text-success">
+                                                    {obtenerNombreCliente(dato.cliente_id)}
+                                                </p>
+                                            </td>
+                                            <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                                                <p className="font-medium text-black dark:text-white">
+                                                    {obtenerTelefonoCliente(dato.cliente_id)}
+                                                </p>
+                                            </td>
+                                        </>
+                                    )}
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                         <p className="inline-flex rounded-full bg-warning bg-opacity-10 py-1 px-3 text-sm font-medium text-warning">
                                             {dato.cantidadaves} Aves
@@ -342,18 +408,23 @@ export default function TablesFacturas() {
                                         </p>
                                     </td>
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+
                                         <div className="flex items-center space-x-3.5">
-                                            <button
-                                                onClick={() => enviarFacturaPorWhatsApp(dato.id)}
-                                                className="bg-green hover:bg-green text-white rounded-full p-2">
-                                                <FaWhatsapp />
-                                            </button>
-                                            <button className="bg-red hover:bg-primary-dark text-white rounded-full p-2">
-                                                <FaTrash />
-                                            </button>
-                                            <button className="bg-primary hover:bg-primary-dark text-white rounded-full p-2">
-                                                <FaPencilAlt />
-                                            </button>
+                                            {usuario && usuario.rol === 1 && (
+                                                <>
+                                                    <button
+                                                        onClick={() => enviarFacturaPorWhatsApp(dato.id)}
+                                                        className="bg-green hover:bg-green text-white rounded-full p-2">
+                                                        <FaWhatsapp />
+                                                    </button>
+                                                    <button className="bg-red hover:bg-primary-dark text-white rounded-full p-2">
+                                                        <FaTrash />
+                                                    </button>
+                                                    <button className="bg-primary hover:bg-primary-dark text-white rounded-full p-2">
+                                                        <FaPencilAlt />
+                                                    </button>
+                                                </>
+                                            )}
                                             <button
                                                 onClick={() => descargarFactura(dato.id)}
                                                 className="bg-meta-3 hover:bg-primary-dark text-white rounded-full p-2">

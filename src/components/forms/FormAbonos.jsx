@@ -15,9 +15,8 @@ export default function FormFactura() {
   const [selectedClienteId, setSelectedClienteId] = useState('');
   const [lotes, setLotes] = useState([]);
   const [selectedLoteId, setSelectedLoteId] = useState('');
-  const { name, _id } = usuario[0];
-  const [vendedorId, setVendedorId] = useState(_id || '');
-  const [vendedorNombre, setVendedorNombre] = useState(name || '');
+  const [metodosPago, setMetodosPago] = useState([]);
+  const [selectedMetodoPago, setSelectedMetodoPago] = useState('');
   const [valor, setValor] = useState(0);
   const [fecha, setFecha] = useState(null);
 
@@ -28,6 +27,7 @@ export default function FormFactura() {
       const factura = {
         lote_id: selectedLoteId,
         cliente_id: selectedClienteId,
+        metodo_pago: selectedMetodoPago,
         valor: valor,
         fecha: fecha,
         numerofactura: numeroFactura,
@@ -49,6 +49,7 @@ export default function FormFactura() {
 
       setSelectedClienteId('');
       setSelectedLoteId('');
+      setSelectedMetodoPago('');
       setValor(0);
       setFecha(null);
 
@@ -138,6 +139,21 @@ export default function FormFactura() {
               {cliente.nombre}
             </option>
           ))}
+        </select>
+      </div>
+      <div>
+        <label className="mb-3 block text-black dark:text-white"><FaUser className="inline-block mr-2" /> Método de Pago</label>
+        <select
+          className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+          value={metodosPago}
+          onChange={(e) => setSelectedMetodoPago(e.target.value)}
+        >
+          <option value="" disabled>Selecciona un Método de Pago</option>
+          
+            <option value="Transferencia">Transferencia</option>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Otro">Otro Pago</option>
+            
         </select>
       </div>
       <div className="mb-4">

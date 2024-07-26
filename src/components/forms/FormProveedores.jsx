@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import clienteMongoAxios from '../../config/clienteMongoAxios'
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FaAddressCard, FaPhone, FaUniversity, FaUserTag } from 'react-icons/fa';
 
 export default function FormProveedores() {
 
@@ -44,7 +45,7 @@ export default function FormProveedores() {
     <ToastContainer />
       <div>
         <label className="mb-3 block text-black dark:text-white">
-          Nombre
+          <FaUniversity className="inline-block mr-2" />Nombre
         </label>
         <input
           type="text"
@@ -56,7 +57,7 @@ export default function FormProveedores() {
       </div>
       <div>
         <label className="mb-3 block text-black dark:text-white">
-          Documento
+        <FaAddressCard className="inline-block mr-2" />Documento
         </label>
         <input
           type="text"
@@ -68,7 +69,7 @@ export default function FormProveedores() {
       </div>
       <div>
         <label className="mb-3 block text-black dark:text-white">
-          Telefono
+        <FaPhone className="inline-block mr-2" />Telefono
         </label>
         <input
           type="text"

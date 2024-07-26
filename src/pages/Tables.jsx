@@ -9,6 +9,8 @@ import TablesCompraAlimento from "../components/tables/TableCompraAlimento";
 import TablesLote from "../components/tables/TableLote";
 import TablesProveedores from "../components/tables/TableProveedores";
 import TablesAbonos from "../components/tables/TableAbonos";
+import TablesUsuarios from "../components/tables/TableUsuarios";
+import useAuth from "../hooks/useAuth"; // Asegúrate de tener el hook de autenticación
 
 const datos = {
   "1": <TablesLote />,
@@ -20,11 +22,30 @@ const datos = {
   "7": <TablesProveedores />,
   "8": <TablesFacturas />,
   "9": <TablesAbonos />,
-}
+  "10": <TablesUsuarios />,
+};
 
 const Tables = () => {
-  
-  const [tipo, setTipo] = useState("1");
+  const { usuario } = useAuth();
+  const [tipo, setTipo] = useState("");
+
+  const opcionesDisponibles = usuario.rol === 1 
+    ? [
+        { value: "1", label: "Lotes" },
+        { value: "2", label: "Insumos" },
+        { value: "3", label: "Compra de Alimento" },
+        { value: "4", label: "Mortalidad" },
+        { value: "5", label: "Alimentación" },
+        { value: "6", label: "Clientes" },
+        { value: "7", label: "Proveedores" },
+        { value: "8", label: "Facturas" },
+        { value: "9", label: "Abonos" },
+        { value: "10", label: "Usuarios" },
+      ]
+    : [
+        { value: "8", label: "Facturas" },
+        { value: "9", label: "Abonos" },
+      ];
 
   return (
     <> 
@@ -32,7 +53,7 @@ const Tables = () => {
       <div className="flex flex-col gap-10">
         <div>
           <label className="mb-3 block text-black dark:text-white">
-            Seleciona los datos que deseas ver
+            Selecciona los datos que deseas ver
           </label>
           <div className="relative z-20 bg-white dark:bg-form-input">
             <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
@@ -70,15 +91,12 @@ const Tables = () => {
               value={tipo}
               onChange={(e) => setTipo(e.target.value)}
             >
-              <option value="1">Lotes</option>
-                    <option value="2">Insumos</option>
-                    <option value="3">Compra de Alimento</option>
-                    <option value="4">Mortalidad</option>
-                    <option value="5">Alimentacion</option>
-                    <option value="6">Clientes</option>
-                    <option value="7">Proveedores</option>
-                    <option value="8">Facturas</option>
-                    <option value="9">Abonos</option>
+              <option value="" disabled>Selecciona una opción</option>
+              {opcionesDisponibles.map(opcion => (
+                <option key={opcion.value} value={opcion.value}>
+                  {opcion.label}
+                </option>
+              ))}
             </select>
             <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
               <svg
@@ -100,8 +118,8 @@ const Tables = () => {
             </span>
           </div>
         </div>
-
-        {datos[tipo]}
+        {tipo && datos[tipo]}
+        {!tipo && <div className="text-center text-gray-500">Por favor selecciona una opción.</div>}
       </div>
     </>
   );

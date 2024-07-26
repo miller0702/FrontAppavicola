@@ -1,23 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
+import useAuth from '../../hooks/useAuth';
 
-const ChartFour = () => {
+const ChartFive = ({ clienteId }) => {
   const [state, setState] = useState({
-    series: [{ name: 'Ventas Diarias', data: [] }],
+    series: [{ name: 'Compras Diarias', data: [] }],
     categories: []
   });
+  const [clientes, setClientes] = useState([]);
+  const [clienteIdLocal, setClienteId] = useState(clienteId);
+  const { usuario } = useAuth();
 
   useEffect(() => {
-    obtenerDatos();
-  }, []);
+    if (usuario) {
+      fetchClientes();
+    }
+  }, [usuario]);
+
+  useEffect(() => {
+    if (clienteIdLocal) {
+      obtenerDatos();
+    }
+  }, [clienteIdLocal]);
+
+  const fetchClientes = async () => {
+    try {
+      const response = await clienteMongoAxios.get('/api/customers/getAll');
+      setClientes(response.data);
+      const clienteEncontrado = response.data.find(cliente => cliente.telefono === usuario.phone);
+      if (clienteEncontrado) {
+        setClienteId(clienteEncontrado.id);
+      } else {
+        console.warn("No se encontró cliente con el teléfono del usuario.");
+      }
+    } catch (error) {
+      console.error('Error al obtener la lista de clientes', error);
+    }
+  };
 
   const obtenerDatos = async () => {
     try {
-      const { data } = await clienteMongoAxios.get('/api/sale/getSaleForDay');
-      formatearDatos(data);
+      const { data } = await clienteMongoAxios.get('/api/sale/getSaleForDayCustomer');
+
+      if (usuario && usuario.rol === 3) {
+        const telefonoUsuario = usuario.phone;
+        const datosFiltrados = data.filter(row => {
+          const cliente = clientes.find(cliente => cliente.id === row.cliente_id);
+          const telefonoCliente = cliente ? cliente.telefono : '';
+          return telefonoCliente === telefonoUsuario;
+        });
+        formatearDatos(datosFiltrados);
+      } else {
+        formatearDatos(data);
+      }
     } catch (error) {
-      console.error("Error fetching sales data:", error);
+      console.error("Error fetching purchase data:", error);
     }
   };
 
@@ -26,18 +64,19 @@ const ChartFour = () => {
   };
 
   const formatearDatos = (data) => {
-    const seriesDataVentas = data.map(row => row.total_ventas);
-    const seriesDataCantidad = data.map(row => row.total_cantidad_aves);
+    const seriesDataCompras = data.map(row => row.total_compras);
+    const seriesDataCantidad = data.map(row => row.cantidadaves);
     const categories = data.map(row => row.dia);
 
     setState({
       series: [
-        { name: 'Ventas Diarias', data: seriesDataVentas },
+        { name: 'Compras Diarias', data: seriesDataCompras },
         { name: 'Cantidad Aves', data: seriesDataCantidad }
       ],
       categories: categories
     });
   };
+
 
   const options = {
     colors: ['#3C50E0', '#FF5733'],
@@ -133,12 +172,12 @@ const ChartFour = () => {
     <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pt-7.5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5">
       <div>
         <h3 className="text-xl font-semibold text-black dark:text-white">
-          Total ventas diarias lote actual
+          Total Compras Diarias
         </h3>
       </div>
 
       <div className="mb-2">
-        <div id="chartFour" className="-ml-5">
+        <div id="chartComprasDiarias" className="-ml-5">
           <ReactApexChart
             options={options}
             series={state.series}
@@ -151,4 +190,4 @@ const ChartFour = () => {
   );
 };
 
-export default ChartFour;
+export default ChartFive;

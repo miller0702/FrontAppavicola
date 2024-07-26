@@ -3,12 +3,16 @@ import React, { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
 
+const formatearPrecio = (precio) => {
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(precio);
+};
+
 const options = {
   chart: {
     type: 'donut',
   },
-  colors: ['#10B981', '#da1111', '#ffa70b'],
-  labels: ['Ganancias', 'Gastos Insumos', 'Compra Alimento'],
+  colors: ['#10B981', '#da1111', '#ffa70b', '#3056D3'],
+  labels: ['Ganancias', 'Gastos Insumos', 'Compra Alimento', 'Valor Pollo'],
   legend: {
     show: true,
     position: 'bottom',
@@ -24,6 +28,13 @@ const options = {
   },
   dataLabels: {
     enabled: false,
+  },
+  tooltip: {
+    y: {
+      formatter: function (value) {
+        return formatearPrecio(value);
+      }
+    }
   },
   responsive: [
     {
@@ -54,7 +65,7 @@ const ChartThree= () => {
   const obtenerDatos = async () => {
     try {
       const {data} = await clienteMongoAxios.get('/api/sale/getTotales')
-      setDatos([(parseFloat(data.total_sales) - ( parseFloat(data.total_supplies) + parseFloat(data.total_buys))), parseInt(data.total_supplies),parseInt(data.total_buys)])
+      setDatos([(parseFloat(data.total_sales) - ( parseFloat(data.total_supplies) + parseFloat(data.total_buys) + parseFloat(data.precio_lote))), parseInt(data.total_supplies),parseInt(data.total_buys),parseInt(data.precio_lote)])
       console.log(setDatos)
     } catch (error) {
       console.log(error)

@@ -7,8 +7,7 @@ import useAuth from "../hooks/useAuth";
 import { FaFileContract, FaHouse } from "react-icons/fa6";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
-  const { logout } = useAuth();
-
+  const { logout, usuario } = useAuth();
   const location = useLocation();
   const { pathname } = location;
 
@@ -20,7 +19,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     storedSidebarExpanded === null ? false : storedSidebarExpanded === "true"
   );
 
-  // close on click outside
   useEffect(() => {
     const clickHandler = ({ target }) => {
       if (!sidebar.current || !trigger.current) return;
@@ -36,7 +34,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     return () => document.removeEventListener("click", clickHandler);
   });
 
-  // close if the esc key is pressed
   useEffect(() => {
     const keyHandler = ({ keyCode }) => {
       if (!sidebarOpen || keyCode !== 27) return;
@@ -56,15 +53,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   }, [sidebarExpanded]);
 
   const menuItems = [
-    { to: "/panel", icon: <FaHouse style={{ fontSize: "20px" }}/>, label: "Inicio" },
-    { to: "/panel/calendar", icon: <FaCalendar style={{ fontSize: "20px" }}/>, label: "Calendario" },
-    { to: "/panel/forms", icon: <FaClipboardList style={{ fontSize: "20px" }}/>, label: "Registros" },
-    { to: "/panel/tables", icon: <FaDatabase style={{ fontSize: "20px" }}/>, label: "Datos" },
-    { to: "/panel/enfermedades", icon: <FaShieldVirus style={{ fontSize: "20px" }}/>, label: "Enfermedades" },
-    { to: "/panel/settings", icon: <FaCogs style={{ fontSize: "20px" }}/>, label: "Configuración" },
-    { to: "/panel/chart", icon: <FaFileContract style={{ fontSize: "20px" }}/>, label: "Reportes" },
-    { to: "/", icon: <FaSignOutAlt style={{ fontSize: "20px" }}/>, label: "Cerrar Sesión", action: logout },
+    { to: "/panel", icon: <FaHouse style={{ fontSize: "20px" }}/>, label: "Inicio", roles: [1, 2, 3] },
+    { to: "/panel/forms", icon: <FaClipboardList style={{ fontSize: "20px" }}/>, label: "Registros", roles: [1] },
+    { to: "/panel/tables", icon: <FaDatabase style={{ fontSize: "20px" }}/>, label: "Datos", roles: [1, 2, 3] },
+    { to: "/panel/enfermedades", icon: <FaShieldVirus style={{ fontSize: "20px" }}/>, label: "Enfermedades", roles: [1] },
+    { to: "/panel/settings", icon: <FaCogs style={{ fontSize: "20px" }}/>, label: "Configuración", roles: [1] },
+    { to: "/panel/chart", icon: <FaFileContract style={{ fontSize: "20px" }}/>, label: "Reportes", roles: [1] },
+    { to: "/", icon: <FaSignOutAlt style={{ fontSize: "20px" }}/>, label: "Cerrar Sesión", action: logout , roles: [1, 2, 3]},
   ];
+
+  console.log('Usuario:', usuario);
+
+  const userRole = usuario && typeof usuario.rol === 'number' ? usuario.rol : null;
+  
+  const filteredMenuItems = menuItems.filter(item => {
+    console.log('Roles del ítem:', item.roles);
+    return Array.isArray(item.roles) && userRole && item.roles.includes(Number(userRole));
+  });
 
   return (
     <aside
@@ -72,7 +77,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       className={`absolute left-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
     >
-      {/* <!-- SIDEBAR HEADER --> */}
       <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
         <NavLink to="/">
           <img src={Logo} width={200} height={80} alt="Logo" />
@@ -99,10 +103,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           </svg>
         </button>
       </div>
-
-      {/* <!-- SIDEBAR MENU --> */}
       <div className="flex flex-col gap-6 overflow-y-auto px-6 pb-6 lg:pb-6.5">
-        {menuItems.map((item, index) => (
+        {filteredMenuItems.map((item, index) => (
           <NavLink
             key={index}
             to={item.to}

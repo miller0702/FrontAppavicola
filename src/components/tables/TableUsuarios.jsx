@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
-import { FaTrash, FaPencilAlt, FaFilePdf, FaSearch, FaRegFilePdf } from 'react-icons/fa';
-import { Box, Button, InputAdornment, Modal, TextField } from '@mui/material';
+import { FaTrash, FaPencilAlt, FaSearch } from 'react-icons/fa';
+import { Box, Button, InputAdornment, Modal, Switch, TextField } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-export default function TablesClientes() {
+const tipoPurinaTextos = {
+    1: 'Administrador',
+    2: 'Galponero',
+    3: 'Cliente'
+  };
+
+export default function TablesUsuarios() {
     const [datos, setDatos] = useState([]);
     const [paginaActual, setPaginaActual] = useState(1);
     const [datosPorPagina] = useState(7);
@@ -25,32 +31,32 @@ export default function TablesClientes() {
     const filtrarDatos = () => {
         const term = searchTerm.toLowerCase();
         const filtered = datos.filter(dato =>
-            dato.nombre.toLowerCase().includes(term) ||
-            dato.documento.toLowerCase().includes(term) ||
-            dato.telefono.toLowerCase().includes(term)
+            dato.name.toLowerCase().includes(term) ||
+            dato.phone.toLowerCase().includes(term)
         );
         setDatosFiltrados(filtered);
     };
 
+    const obtenerTextoTipoUsuario = (rol) => {
+        return tipoPurinaTextos[rol] || 'Desconocido';
+      };
+
     const getTableData = async () => {
-        const { data } = await clienteMongoAxios("/api/customers/getCustomers");
+        const { data } = await clienteMongoAxios("/api/users/getAll");
         setDatos(data);
         setDatosFiltrados(data);
     };
 
-    const formatearPrecio = (precio) => {
-        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(precio);
-    };
-
-    const cambiarPagina = (numeroPagina) => {
-        setPaginaActual(numeroPagina);
-    };
-
     const handleDelete = async (id) => {
         try {
-            await clienteMongoAxios.delete(`/api/customers/delete/${id}`);
-            setDatos(datos.filter(dato => dato.id !== id));
-            setDatosFiltrados(datosFiltrados.filter(dato => dato.id !== id));
+            if (!id || id === 'undefined') {
+                console.error("ID no válido para eliminar el registro");
+                return;
+            }
+
+            await clienteMongoAxios.delete(`/api/users/delete/${id}`);
+            setDatos(datos.filter(dato => dato._id !== id));  // Asegúrate de usar el campo correcto
+            setDatosFiltrados(datosFiltrados.filter(dato => dato._id !== id));
             toast.success('Registro eliminado con éxito');
         } catch (error) {
             console.error("Error deleting data: ", error);
@@ -74,7 +80,7 @@ export default function TablesClientes() {
 
     const handleSave = async () => {
         try {
-            await clienteMongoAxios.put(`/api/customers/update/${currentRecord.id}`, currentRecord);
+            await clienteMongoAxios.put(`/api/users/update/${currentRecord._id}`, currentRecord);
             getTableData();
             handleClose();
             toast.success('Registro actualizado con éxito');
@@ -84,107 +90,20 @@ export default function TablesClientes() {
         }
     };
 
-    const descargarFactura = async (id) => {
+    const handleStatusChange = async (id, isActive) => {
         try {
-            const response = await clienteMongoAxios.get(`/api/customers/${id}/invoice`, {
-                responseType: 'blob',
-            });
-
-            if (response.status !== 200) {
-                throw new Error(`Error al generar la factura: ${response.statusText}`);
+            if (!id || id === 'undefined') {
+                console.error("ID no válido para actualizar el estado");
+                return;
             }
 
-            const cliente = datos.find(dato => dato.id === id);
-            const fecha = new Date();
-            const año = fecha.getFullYear();
-            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-            const día = String(fecha.getDate()).padStart(2, '0');
-            const fechaFormateada = `${día}-${mes}-${año}`;
-
-            const clienteNombreMayusculas = cliente.nombre.toUpperCase();
-
-            const blob = new Blob([response.data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `SALDO_${clienteNombreMayusculas}_${fechaFormateada}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            toast.success('Factura Descargada con Éxito', {
-                position: toast.POSITION.TOP_CENTER,
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                className: 'bg-white dark:bg-boxdark'
-            });
+            await clienteMongoAxios.put(`/api/users/status/${id}`, { isActive });
+            setDatos(datos.map(dato => dato._id === id ? { ...dato, isActive } : dato));  // Asegúrate de usar el campo correcto
+            setDatosFiltrados(datosFiltrados.map(dato => dato._id === id ? { ...dato, isActive } : dato));
+            toast.success('Estado actualizado con éxito');
         } catch (error) {
-            toast.error('Error al Descargar Factura', {
-                position: toast.POSITION.TOP_CENTER,
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                className: 'bg-white dark:bg-boxdark text-black dark:text-white'
-            });
-            console.error('Error al descargar la factura:', error);
-        }
-    };
-
-    const descargarAbonos = async (id) => {
-        try {
-            const response = await clienteMongoAxios.get(`/api/customers/${id}/invoiceA`, {
-                responseType: 'blob',
-            });
-
-            if (response.status !== 200) {
-                throw new Error(`Error al generar el recibo: ${response.statusText}`);
-            }
-
-            const cliente = datos.find(dato => dato.id === id);
-            const fecha = new Date();
-            const año = fecha.getFullYear();
-            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-            const día = String(fecha.getDate()).padStart(2, '0');
-            const fechaFormateada = `${día}-${mes}-${año}`;
-
-            const clienteNombreMayusculas = cliente.nombre.toUpperCase();
-
-            const blob = new Blob([response.data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `ABONOS_${clienteNombreMayusculas}_${fechaFormateada}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            toast.success('Recibo Descargado con Éxito', {
-                position: toast.POSITION.TOP_CENTER,
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                className: 'bg-white dark:bg-boxdark'
-            });
-        } catch (error) {
-            toast.error('Error al Descargar Recibo', {
-                position: toast.POSITION.TOP_CENTER,
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                className: 'bg-white dark:bg-boxdark text-black dark:text-white'
-            });
-            console.error('Error al descargar el recibo:', error);
+            console.error("Error updating status: ", error);
+            toast.error('Error al actualizar el estado');
         }
     };
 
@@ -192,7 +111,7 @@ export default function TablesClientes() {
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
             <ToastContainer />
             <TextField
-                label="Buscar Cliente"
+                label="Buscar Usuario"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 margin="normal"
@@ -213,19 +132,19 @@ export default function TablesClientes() {
                                 Nombre
                             </th>
                             <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                                Documento
+                                Apellido
                             </th>
                             <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                                 Telefono
                             </th>
                             <th className="py-4 px-4 font-medium text-black dark:text-white">
-                                Total Abonado
+                                Correo
                             </th>
                             <th className="py-4 px-4 font-medium text-black dark:text-white">
-                                Total Comprado
+                                Rol
                             </th>
                             <th className="py-4 px-4 font-medium text-black dark:text-white">
-                                Deuda Actual
+                                Estado
                             </th>
                             <th className="py-4 px-4 font-medium text-black dark:text-white">
                                 Acciones
@@ -236,36 +155,38 @@ export default function TablesClientes() {
                         {datosFiltrados
                             .slice((paginaActual - 1) * datosPorPagina, paginaActual * datosPorPagina)
                             .map((dato) => (
-                                <tr key={dato.id}>
+                                <tr key={dato._id}>
                                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                                         <h5 className="font-medium text-black dark:text-white">
-                                            {dato.nombre}
+                                            {dato.name}
                                         </h5>
                                     </td>
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="inline-flex rounded-full bg-meta-1 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-1">
-                                            {dato.documento}
+                                        <p className="font-medium text-black dark:text-white">
+                                            {dato.lastname}
                                         </p>
                                     </td>
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                         <p className="inline-flex rounded-full bg-meta-8 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-8">
-                                            {dato.telefono}
+                                            {dato.phone}
                                         </p>
                                     </td>
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                         <p className="inline-flex rounded-full bg-meta-3 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-3">
-                                            {formatearPrecio(dato.total_payments)}
+                                            {dato.email}
                                         </p>
                                     </td>
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                         <p className="inline-flex rounded-full bg-meta-5 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-5">
-                                            {formatearPrecio(dato.total_sales)}
+                                        {obtenerTextoTipoUsuario(dato.rol)}
                                         </p>
                                     </td>
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                                        <p className="inline-flex rounded-full bg-meta-1 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-1">
-                                            {formatearPrecio(dato.deuda_actual)}
-                                        </p>
+                                        <Switch
+                                            checked={dato.isActive}
+                                            onChange={() => handleStatusChange(dato._id, !dato.isActive)}
+                                            color="primary"
+                                        />
                                     </td>
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                         <div className="flex items-center space-x-3.5">
@@ -275,19 +196,10 @@ export default function TablesClientes() {
                                                 <FaPencilAlt />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(dato.id)}
-                                                className="bg-red hover:bg-primary-dark text-white rounded-full p-2">
+                                                onClick={() => handleDelete(dato._id)}
+                                                className="bg-red hover:bg-primary-dark text-white rounded-full p-2"
+                                                disabled={dato.isActive}>
                                                 <FaTrash />
-                                            </button>
-                                            <button
-                                                onClick={() => descargarFactura(dato.id)}
-                                                className="bg-meta-3 hover:bg-primary-dark text-white rounded-full p-2">
-                                                <FaFilePdf />
-                                            </button>
-                                            <button
-                                                onClick={() => descargarAbonos(dato.id)}
-                                                className="bg-meta-5 hover:bg-primary-dark text-white rounded-full p-2">
-                                                <FaRegFilePdf />
                                             </button>
                                         </div>
                                     </td>
@@ -317,31 +229,31 @@ export default function TablesClientes() {
                     </button>
                 </div>
             </div>
-            <Modal open={open} onClose={handleClose} >
+            <Modal open={open} onClose={handleClose}>
                 <Box sx={{ ...modalStyle }} className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
                     <h2>Editar Registro</h2>
                     <TextField
                         margin="normal"
                         fullWidth
                         label="Nombre"
-                        name="nombre"
-                        value={currentRecord.nombre}
+                        name="name"
+                        value={currentRecord.name || ''}
                         onChange={handleChange}
                     />
                     <TextField
                         margin="normal"
                         fullWidth
-                        label="Documento"
-                        name="documento"
-                        value={currentRecord.documento}
+                        label="Apellido"
+                        name="lastname"
+                        value={currentRecord.lastname || ''}
                         onChange={handleChange}
                     />
                     <TextField
                         margin="normal"
                         fullWidth
                         label="Telefono"
-                        name="telefono"
-                        value={currentRecord.telefono}
+                        name="phone"
+                        value={currentRecord.phone || ''}
                         onChange={handleChange}
                     />
                     <button onClick={handleSave} className="w-full mt-5 flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:shadow-1">

@@ -1,65 +1,64 @@
-import Breadcrumb from '../components/Breadcrumb';
 import { useState, useEffect } from "react";
-import useAuth from '../hooks/useAuth';
-import clienteMongoAxios from '../config/clienteMongoAxios';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../util/firebaseConfig'; // Importa storage desde firebaseConfig
-import { FaUpload } from 'react-icons/fa';
+import { storage } from '../util/firebaseConfig';
+import clienteMongoAxios from '../config/clienteMongoAxios';
+import useAuth from '../hooks/useAuth';
 import { toast } from 'react-toastify';
+import Breadcrumb from "../components/Breadcrumb";
+import { FaUpload } from "react-icons/fa";
 
 const Settings = () => {
-  const { usuario } = useAuth();
-  const { name, lastname, phone, email, image, _id } = usuario[0];
+  const { auth } = useAuth();
+  const [usuario, setUsuario] = useState(null);
 
-  const [nombre, setNombre] = useState(name || "");
-  const [apellido, setApellido] = useState(lastname || "");
-  const [telefono, setTelefono] = useState(phone || "");
-  const [correo, setCorreo] = useState(email || "");
-  const [selectedImage, setSelectedImage] = useState(null); // Guardamos el archivo aquí
-  const [modalOpen, setModalOpen] = useState(false);
-  const [rows, setRows] = useState(localStorage.getItem("alertSettings") ? JSON.parse(localStorage.getItem("alertSettings")) : []);
-  const [rowToEdit, setRowToEdit] = useState(null);
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem("alertSettings", JSON.stringify(rows));
-  }, [rows]);
+    getUsuario();
+  }, []);
 
-  const handleDeleteRow = (targetIndex) => {
-    setRows(rows.filter((_, idx) => idx !== targetIndex));
-  };
+  useEffect(() => {
+    if (usuario) {
+      setNombre(usuario.name || "");
+      setApellido(usuario.lastname || "");
+      setTelefono(usuario.phone || "");
+      setCorreo(usuario.email || "");
+    }
+  }, [usuario]);
 
-  const handleEditRow = (idx) => {
-    setRowToEdit(idx);
-    setModalOpen(true);
-  };
-
-  const handleSubmit = (newRow) => {
-    rowToEdit === null
-      ? setRows([...rows, newRow])
-      : setRows(
-        rows.map((currRow, idx) => {
-          if (idx !== rowToEdit) return currRow;
-          return newRow;
-        })
-      );
+  const getUsuario = async () => {
+    try {
+      const { data } = await clienteMongoAxios.get('/api/users/getUserById', {
+        headers: {
+          'Authorization': `${auth.token}`
+        }
+      });
+      setUsuario(data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setSelectedImage(file); // Guardamos el archivo en lugar de la URL
+      setSelectedImage(file);
     }
   };
 
   const actualizarDatos = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append('id', _id);
+    formData.append('id', usuario._id);
     formData.append('name', nombre);
     formData.append('lastname', apellido);
     formData.append('email', correo);
     formData.append('phone', telefono);
-  
+
     try {
       if (selectedImage) {
         const imageRef = ref(storage, `images/${selectedImage.name}`);
@@ -67,13 +66,14 @@ const Settings = () => {
         const imageUrl = await getDownloadURL(imageRef);
         formData.append('image', imageUrl);
       }
-  
-      const { data } = await clienteMongoAxios.put('/api/users/updateUser', formData, {
+
+      await clienteMongoAxios.put('/api/users/updateUser', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Authorization': `${auth.token}`
         },
       });
-  
+
       toast.success('Datos actualizados correctamente');
     } catch (error) {
       toast.error('Error al actualizar los datos');
@@ -150,7 +150,7 @@ const Settings = () => {
                 <form onSubmit={actualizarDatos}>
                   <div className="mb-4 flex items-center gap-3">
                     <div className="h-14 w-14 rounded-full overflow-hidden border border-dashed border-primary">
-                      <img src={image || '../assets/images/Logo.png'} alt="User" className="object-cover h-full w-full" />
+                      <img src={usuario && usuario.image ? usuario.image : '../assets/images/Logo.png'} alt="User" className="object-cover h-full w-full" />
                     </div>
                     <div>
                       <span className="mb-1.5 text-black dark:text-white">Edita tu foto</span>
