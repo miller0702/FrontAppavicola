@@ -5,4 +5,4 @@ services:
     publishDir: build
     routes:
       - src: /*
-        dest: /index.html
+        dest: index.html
