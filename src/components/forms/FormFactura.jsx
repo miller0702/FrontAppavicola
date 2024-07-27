@@ -10,7 +10,6 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 export default function FormFactura() {
-  const { usuario } = useAuth();
   const [clientes, setClientes] = useState([]);
   const [selectedClienteId, setSelectedClienteId] = useState('');
   const [lotes, setLotes] = useState([]);
