@@ -94,7 +94,6 @@ export default function FormFactura() {
       const factura = {
         lote_id: selectedLoteId,
         cliente_id: selectedClienteId,
-        user_id: vendedorId,
         cantidadaves: cantidadAves,
         canastas_vacias: canastasVacias.map((canasta) => parseFloat(canasta)),
         canastas_llenas: canastasLlenas.map((canasta) => parseFloat(canasta)),
