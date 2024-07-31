@@ -13,7 +13,6 @@ const CardEight = () => {
     try {
       const { data } = await clienteMongoAxios.get('/api/suppliers/getTotalSuppliers');
       setTotalBajas(data.totalSuppliers);
-      console.log(data.totalSuppliers);
     } catch (error) {
       console.log(error);
     }

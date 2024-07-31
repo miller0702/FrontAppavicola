@@ -17,9 +17,10 @@ import clienteMongoAxios from '../config/clienteMongoAxios';
 const Chart = () => {
   const [lotes, setLotes] = useState([]);
   const [selectedLoteId, setSelectedLoteId] = useState('');
-
+  const [selectedLoteDescripcion, setSelectedLoteDescripcion] = useState('');
+  const [selectedReportType, setSelectedReportType] = useState('');
+  
   useEffect(() => {
-    // Cargar lotes desde la API
     const fetchLotes = async () => {
       try {
         const response = await clienteMongoAxios.get('/api/lote/getAll');
@@ -32,8 +33,19 @@ const Chart = () => {
     fetchLotes();
   }, []);
 
+  useEffect(() => {
+    if (lotes.length > 0 && selectedLoteId) {
+      const selectedLote = lotes.find(lote => lote.id === parseInt(selectedLoteId, 10));
+      setSelectedLoteDescripcion(selectedLote ? selectedLote.descripcion : '');
+    }
+  }, [selectedLoteId, lotes]);
+
   const handleLoteChange = (event) => {
     setSelectedLoteId(event.target.value);
+  };
+
+  const handleReportTypeChange = (event) => {
+    setSelectedReportType(event.target.value);
   };
 
   const handleDownloadReport = async () => {
@@ -41,16 +53,27 @@ const Chart = () => {
       alert('Por favor, selecciona un lote.');
       return;
     }
-
+  
     try {
-      const response = await clienteMongoAxios.get(`/api/lote/${selectedLoteId}/invoice/`, {
+      const endpoint = selectedReportType === ''
+        ? `/api/lote/${selectedLoteId}/invoice`
+        : `/api/lote/${selectedLoteId}/reporte?tipo=${selectedReportType}`;
+  
+      const response = await clienteMongoAxios.get(endpoint, {
         responseType: 'blob',
       });
-
+  
+      if (response.status !== 200) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+  
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `REPORTE_GENERAL_${selectedLoteId}.pdf`);
+      const fileName = selectedReportType === ''
+        ? `REPORTE_GENERAL_${selectedLoteDescripcion || 'DESCONOCIDO'}.pdf`
+        : `REPORTE_${selectedReportType}_${selectedLoteDescripcion || 'DESCONOCIDO'}.pdf`;
+      link.setAttribute('download', fileName.replace(/\s+/g, '_'));
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -58,17 +81,24 @@ const Chart = () => {
       console.error('Error al descargar el reporte:', error);
     }
   };
+  
 
   return (
     <>
       <Breadcrumb pageName="Reportes Generales" />
-      <p className='mb-5'>Selecciona el lote de aves del cual deseas descargar el reporte general en PDF.</p>
+      <p className='mb-5'>
+        {selectedReportType === ''
+          ? 'Selecciona el lote de aves del cual deseas descargar el reporte general en PDF.'
+          : 'Selecciona el lote de aves y el tipo de reporte que deseas descargar en PDF.'}
+      </p>
+
       <div className="mb-5">
-        <label htmlFor="lote-select" className="mr-3">Selecciona un Lote:</label>
+        <label htmlFor="lote-select" className="mr-3 mt-3">Selecciona un Lote:</label>
         <select
-          className=" rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+          id="lote-select"
+          className="mt-3 mr-3 rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={selectedLoteId}
-          onChange={(e) => setSelectedLoteId(e.target.value)}
+          onChange={handleLoteChange}
         >
           <option value="">Selecciona un lote</option>
           {lotes.map((lote) => (
@@ -77,20 +107,42 @@ const Chart = () => {
             </option>
           ))}
         </select>
-        <button onClick={handleDownloadReport} className="ml-5 bg-primary text-white rounded px-4 py-2">Descargar Reporte</button>
+
+        <label htmlFor="report-type-select" className="mr-3 mt-3">Selecciona el tipo de reporte:</label>
+        <select
+          id="report-type-select"
+          className="mt-3 rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+          value={selectedReportType}
+          onChange={handleReportTypeChange}
+        >
+          <option value="">Reporte General</option>
+          <option value='1'>Compras de Alimento</option>
+          <option value='2'>Consumo de Alimento</option>
+          <option value='3'>Mortalidad</option>
+          {/* <option value='4'>Insumos y Gastos</option>
+          <option value='5'>Ventas</option>
+          <option value='6'>Abonos</option> */}
+        </select>
+
+        <button
+          onClick={handleDownloadReport}
+          className="mt-3 ml-5 bg-primary text-white rounded px-4 py-2"
+        >
+          Descargar Reporte
+        </button>
       </div>
 
-        <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-          <CardOne />
-          <CardTwo />
-          <CardThree />
-          <CardFour />
-          <CardFive />
-          <CardSix />
-          <CardSeven />
-          <CardEight />
-        </div>
-        
+      <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+        <CardOne />
+        <CardTwo />
+        <CardThree />
+        <CardFour />
+        <CardFive />
+        <CardSix />
+        <CardSeven />
+        <CardEight />
+      </div>
+
       <div className="grid grid-cols-12 gap-4 md:gap-6 2xl:gap-7.5">
         <div className="col-span-12">
           <ChartFour />

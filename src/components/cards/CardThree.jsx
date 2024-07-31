@@ -4,7 +4,8 @@ import homeAlimento from "../../assets/images/icons/homeAlimento.png";
 
 const CardThree = () => {
 
-  const [totalConsumido, setTotalConsumido] = useState("")
+  const [totalConsumido, setTotalConsumido] = useState("");
+  
   useEffect(() =>{
     totalMuertes()
   }, [])

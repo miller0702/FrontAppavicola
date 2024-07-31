@@ -39,7 +39,6 @@ const CardFour = () => {
   };
 
   useEffect(() => {
-    // Sumar los valores cuando ambos estén disponibles
     setTotalGastos(totalInsumos + totalCompras);
   }, [totalInsumos, totalCompras]);
 

@@ -13,7 +13,6 @@ const CardSix = () => {
     try {
       const { data } = await clienteMongoAxios.get('/api/lote/getTotalLote');
       setTotalBajas(data.totalLote);
-      console.log(data.totalLote);
     } catch (error) {
       console.log(error);
     }
@@ -33,7 +32,7 @@ const CardSix = () => {
           Lote Actual
         </h4>
         <h1 className="text-title-lg font-bold text-black dark:text-white" style={{ fontSize: 30 }}>
-          {totalBajas} Aves
+        {totalBajas || 0} Aves
         </h1>
         <span className="text-sm font-medium">Aves restantes en el galpón</span>
       </div>

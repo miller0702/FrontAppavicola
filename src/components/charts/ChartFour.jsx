@@ -3,6 +3,7 @@ import ReactApexChart from 'react-apexcharts';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
 
 const ChartFour = () => {
+  
   const [state, setState] = useState({
     series: [{ name: 'Ventas Diarias', data: [] }],
     categories: []

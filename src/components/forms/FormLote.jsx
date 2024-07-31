@@ -47,7 +47,6 @@ export default function FormLote() {
         cantidad_aves: cantidadAves,
         precio: precio,
         fecha_llegada: fechaLlegada });
-      console.log(data);
       toast.success('Registro exitoso', {
         position: toast.POSITION.TOP_CENTER,
         autoClose: 3000,
@@ -66,7 +65,6 @@ export default function FormLote() {
       setFechaLlegada(null)
 
     } catch (error) {
-      console.log(error);
       toast.error('Error al registrar', {
         position: toast.POSITION.TOP_CENTER,
         autoClose: 3000,

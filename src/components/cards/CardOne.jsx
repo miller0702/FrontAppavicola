@@ -13,7 +13,6 @@ const CardOne = () => {
     try {
       const { data } = await clienteMongoAxios.get('/api/mortality/getTotalMortality');
       setTotalBajas(data.totalMortality);
-      console.log(data.totalMortality);
     } catch (error) {
       console.log(error);
     }

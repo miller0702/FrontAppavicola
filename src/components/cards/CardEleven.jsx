@@ -19,10 +19,8 @@ const CardEleven = () => {
       
       if (cliente) {
         setTotalCompras(cliente.total_sales);
-        console.log(cliente.total_sales);
       } else {
         setTotalCompras("No se encontraron abonos");
-        console.log("No se encontraron abonos para el usuario");
       }
     } catch (error) {
       console.log(error);

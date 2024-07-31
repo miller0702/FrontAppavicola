@@ -19,10 +19,8 @@ const CardTen = () => {
       
       if (cliente) {
         setTotalAbonos(cliente.total_payments);
-        console.log(cliente.total_payments);
       } else {
         setTotalAbonos("No se encontraron abonos");
-        console.log("No se encontraron abonos para el usuario");
       }
     } catch (error) {
       console.log(error);

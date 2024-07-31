@@ -23,7 +23,6 @@ export default function FormProveedores() {
               progress: undefined,
               className: 'bg-white dark:bg-boxdark'
             });
-            console.log(data)
         } catch (error) {
           toast.error('Error al registrar', {
             position: toast.POSITION.TOP_CENTER,
@@ -35,7 +34,6 @@ export default function FormProveedores() {
             progress: undefined,
             className: 'bg-white dark:bg-boxdark text-black dark:text-white'
           });
-            console.log(error)
         }
     }
 

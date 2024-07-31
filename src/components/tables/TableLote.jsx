@@ -9,6 +9,7 @@ import {
   FormControl,
   Modal,
   Box,
+  Switch,
 } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -133,6 +134,18 @@ export default function TablesLote() {
     setFechaBusqueda(null);
   };
 
+  const handleSwitchChange = async (id, currentState) => {
+    const nuevoEstado = currentState === 'activo' ? 'inactivo' : 'activo';
+
+    try {
+      await clienteMongoAxios.put(`/api/lote/status/${id}`, { id, estado: nuevoEstado });
+      getTableData();
+      toast.success('Estado actualizado con éxito');
+    } catch (error) {
+      console.error("Error al cambiar el estado: ", error);
+      toast.error('Error al cambiar el estado');
+    }
+  };
 
   return (
     <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
@@ -163,6 +176,7 @@ export default function TablesLote() {
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Cantidad Aves</th>
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Precio Aves</th>
               <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Fecha Llegada</th>
+              <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">Estado</th>
               <th className="py-4 px-4 font-medium text-black dark:text-white">Acciones</th>
             </tr>
           </thead>
@@ -195,6 +209,13 @@ export default function TablesLote() {
                     <p className="inline-flex font-medium text-black dark:text-white">
                       {formatearFecha(dato.fecha_llegada)}
                     </p>
+                  </td>
+                  <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                    <Switch
+                      checked={dato.estado === 'activo'}
+                      onChange={() => handleSwitchChange(dato.id, dato.estado)}
+                      inputProps={{ 'aria-label': 'controlled' }}
+                    />
                   </td>
                   <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">

@@ -99,6 +99,7 @@ const options = {
 };
 
 const ChartOne = () => {
+  
   const [machos, setMachos] = useState([]);
   const [hembras, setHembras] = useState([]);
   const [fechas, setFechas] = useState([]);

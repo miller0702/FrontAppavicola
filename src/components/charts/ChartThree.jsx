@@ -57,7 +57,9 @@ const options = {
 };
 
 const ChartThree= () => {
+
   const [datos, setDatos] = useState([]);
+  
   useEffect(()=> {
     obtenerDatos();
   },[])
@@ -65,8 +67,10 @@ const ChartThree= () => {
   const obtenerDatos = async () => {
     try {
       const {data} = await clienteMongoAxios.get('/api/sale/getTotales')
-      setDatos([(parseFloat(data.total_sales) - ( parseFloat(data.total_supplies) + parseFloat(data.total_buys) + parseFloat(data.precio_lote))), parseInt(data.total_supplies),parseInt(data.total_buys),parseInt(data.precio_lote)])
-      console.log(setDatos)
+      setDatos([(
+        parseFloat(data.total_sales) - ( parseFloat(data.total_supplies) + parseFloat(data.total_buys) + parseFloat(data.precio_lote))),
+        parseInt(data.total_supplies),
+        parseInt(data.total_buys),parseInt(data.precio_lote)])
     } catch (error) {
       console.log(error)
     }

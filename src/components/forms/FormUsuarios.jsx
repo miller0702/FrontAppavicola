@@ -7,71 +7,80 @@ import { FaKey, FaKeybase, FaKeycdn, FaPhone, FaUser } from 'react-icons/fa';
 import { FaMessage } from 'react-icons/fa6';
 
 export default function FormUsuarios() {
-        const [nombre, setNombre] = useState("");
-        const [apellido, setApellido] = useState("");
-        const [telefono, setTelefono] = useState("");
-        const [email, setEmail] = useState("");
-        const [password, setPassword] = useState("");
-        const [confirmPassword, setConfirmPassword] = useState("");
-        const [rol, setRol] = useState(3);
-    
-        const handleSubmit = async (e) => {
-            e.preventDefault();
-    
-            if (password !== confirmPassword) {
-                console.log('Las contraseñas no coinciden');
-                return;
-            }
-    
-            try {
-                const { data } = await clienteMongoAxios.post('/api/users/create', { 
-                    name: nombre, 
-                    lastname: apellido, 
-                    phone: telefono, 
-                    email, 
-                    password, 
-                    rol 
-                });
-    
-                toast.success('Usuario creado', {
-                    position: "top-right",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                });
-    
-                setNombre('');
-                setApellido('');
-                setTelefono('');
-                setEmail('');
-                setPassword('');
-                setConfirmPassword('');
-                setRol(3);
-    
-                setTimeout(() => {
-                    navigate('/');
-                }, 3000);
-            } catch (error) {
-                toast.error('Error al registrar el usuario', {
-                    position: "top-right",
-                    autoClose: 4000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                });
-            }
-        };
-    
+
+    const [nombre, setNombre] = useState("");
+    const [apellido, setApellido] = useState("");
+    const [telefono, setTelefono] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [rol, setRol] = useState(3);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (password !== confirmPassword) {
+            toast.error('Las contraseñas no coinciden', {
+                position: "top-right",
+                autoClose: 4000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+            return;
+        }
+
+        try {
+            const { data } = await clienteMongoAxios.post('/api/users/create', {
+                name: nombre,
+                lastname: apellido,
+                phone: telefono,
+                email,
+                password,
+                rol
+            });
+
+            toast.success('Usuario creado', {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+
+            setNombre('');
+            setApellido('');
+            setTelefono('');
+            setEmail('');
+            setPassword('');
+            setConfirmPassword('');
+            setRol(3);
+
+            setTimeout(() => {
+                navigate('/');
+            }, 3000);
+        } catch (error) {
+            toast.error('Error al registrar el usuario', {
+                position: "top-right",
+                autoClose: 4000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+        }
+    };
+
     return (
         <>
-
             <h1 className='text-title-lg font-bold'>Registro de Clientes</h1>
             <ToastContainer />
             <form onSubmit={handleSubmit}>

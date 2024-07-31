@@ -347,7 +347,7 @@ export default function TablesAbonos() {
                                             </td>
                                         </>
                                     )}
-                                    
+
                                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                                         <p className="inline-flex rounded-full bg-meta-5 bg-opacity-10 py-1 px-3 text-sm font-medium text-meta-5">
                                             {dato.metodo_pago}

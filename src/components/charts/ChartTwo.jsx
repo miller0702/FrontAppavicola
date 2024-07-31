@@ -63,8 +63,8 @@ const options = {
   },
 };
 
-
 const ChartTwo= () => {
+  
   const [machos, setMachos] = useState([])
   const [hembras, setHembras] = useState([])
 

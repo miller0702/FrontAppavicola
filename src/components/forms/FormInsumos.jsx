@@ -21,7 +21,7 @@ export default function FormInsumos() {
   useEffect(() => {
     const fetchLotes = async () => {
       try {
-        const response = await clienteMongoAxios.get('/api/lote/getAll');
+        const response = await clienteMongoAxios.get('/api/lote/getAllActive');
         setLotes(response.data);
       } catch (error) {
         console.error('Error al obtener la lista de lotes', error);
@@ -61,7 +61,6 @@ export default function FormInsumos() {
         preciocompra: precio,
         fecha: fecha
       });
-      console.log(data);
       toast.success('Registro exitoso', {
         position: toast.POSITION.TOP_CENTER,
         autoClose: 3000,
@@ -80,7 +79,6 @@ export default function FormInsumos() {
       setFecha(null);
 
     } catch (error) {
-      console.log(error);
       toast.error('Error al registrar', {
         position: toast.POSITION.TOP_CENTER,
         autoClose: 3000,

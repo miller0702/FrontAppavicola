@@ -19,10 +19,8 @@ const CardNine = () => {
       
       if (cliente) {
         setTotalDeudas(cliente.deuda_actual);
-        console.log(cliente.deuda_actual);
       } else {
         setTotalDeudas("No se encontraron deudas");
-        console.log("No se encontraron deudas para el usuario");
       }
     } catch (error) {
       console.log(error);

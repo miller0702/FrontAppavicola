@@ -12,7 +12,6 @@ export default function FormClientes() {
   const registrar = async () => {
     try {
       const { data } = await clienteMongoAxios.post('/api/customers/register', { nombre, documento, telefono });
-      console.log(data);
       toast.success('Registro exitoso', {
         position: toast.POSITION.TOP_CENTER,
         autoClose: 3000,
@@ -29,7 +28,6 @@ export default function FormClientes() {
       setTelefono("");
       
     } catch (error) {
-      console.log(error);
       toast.error('Error al registrar', {
         position: toast.POSITION.TOP_CENTER,
         autoClose: 3000,

@@ -4,10 +4,12 @@ import clienteMongoAxios from '../../config/clienteMongoAxios';
 import useAuth from '../../hooks/useAuth';
 
 const ChartFive = ({ clienteId }) => {
+
   const [state, setState] = useState({
     series: [{ name: 'Compras Diarias', data: [] }],
     categories: []
   });
+
   const [clientes, setClientes] = useState([]);
   const [clienteIdLocal, setClienteId] = useState(clienteId);
   const { usuario } = useAuth();
@@ -76,7 +78,6 @@ const ChartFive = ({ clienteId }) => {
       categories: categories
     });
   };
-
 
   const options = {
     colors: ['#3C50E0', '#FF5733'],

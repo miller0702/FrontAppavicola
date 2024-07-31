@@ -98,7 +98,7 @@ export default function TablesUsuarios() {
             }
 
             await clienteMongoAxios.put(`/api/users/status/${id}`, { isActive });
-            setDatos(datos.map(dato => dato._id === id ? { ...dato, isActive } : dato));  // Asegúrate de usar el campo correcto
+            setDatos(datos.map(dato => dato._id === id ? { ...dato, isActive } : dato));
             setDatosFiltrados(datosFiltrados.map(dato => dato._id === id ? { ...dato, isActive } : dato));
             toast.success('Estado actualizado con éxito');
         } catch (error) {

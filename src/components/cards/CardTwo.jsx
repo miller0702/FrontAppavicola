@@ -3,7 +3,8 @@ import clienteMongoAxios from "../../config/clienteMongoAxios";
 import homeVentas from "../../assets/images/icons/homeVentas.png";
 
 const CardTwo = () => {
-  const [totalVentas, setTotalVentas] = useState("")
+  const [totalVentas, setTotalVentas] = useState("");
+  
   useEffect(() =>{
     totalMuertes()
   }, [])

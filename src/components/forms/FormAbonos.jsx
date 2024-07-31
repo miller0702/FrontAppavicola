@@ -34,7 +34,6 @@ export default function FormFactura() {
       };
 
       const { data } = await clienteMongoAxios.post('/api/payment/register', factura);
-      console.log(data);
 
       toast.success('Abono Registrada con Éxito', {
         position: toast.POSITION.TOP_CENTER,
@@ -54,7 +53,6 @@ export default function FormFactura() {
       setFecha(null);
 
     } catch (error) {
-      console.log(error);
       toast.error('Error al Registrar Abono', {
         position: toast.POSITION.TOP_CENTER,
         autoClose: 3000,
@@ -83,7 +81,7 @@ export default function FormFactura() {
   useEffect(() => {
     const fetchLotes = async () => {
       try {
-        const response = await clienteMongoAxios.get('/api/lote/getAll');
+        const response = await clienteMongoAxios.get('/api/lote/getAllActive');
         setLotes(response.data);
       } catch (error) {
         console.error('Error al obtener la lista de lotes', error);

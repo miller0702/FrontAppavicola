@@ -47,7 +47,7 @@ export default function FormCompraAlimento() {
   useEffect(() => {
     const fetchLotes = async () => {
       try {
-        const response = await clienteMongoAxios.get('/api/lote/getAll');
+        const response = await clienteMongoAxios.get('/api/lote/getAllActive');
         setLotes(response.data);
       } catch (error) {
         console.error('Error al obtener la lista de lotes', error);
@@ -57,7 +57,6 @@ export default function FormCompraAlimento() {
   }, []);
 
   useEffect(() => {
-    console.log('Calculando valor de los bultos y valor con flete');
     const cantidad = parseFloat(cantidadBultos) || 0;
     const valor = parseFloat(valorUnitario) || 0;
     const flete = parseFloat(valorFlete) || 0;
@@ -68,8 +67,6 @@ export default function FormCompraAlimento() {
     setValorBultos(valorBultosCalculado.toFixed(2));
     setValorConFlete(valorConFleteCalculado.toFixed(2));
 
-    console.log(`cantidadBultos: ${cantidad}, valorUnitario: ${valor}, valorFlete: ${flete}`);
-    console.log(`valorBultos: ${valorBultosCalculado.toFixed(2)}, valorConFlete: ${valorConFleteCalculado.toFixed(2)}`);
   }, [cantidadBultos, valorUnitario, valorFlete]);
 
   const handleChangeCantidadBultos = (e) => {
@@ -98,7 +95,6 @@ export default function FormCompraAlimento() {
         valor_bultos: parseFloat(valorBultos) || 0,
         valor_con_flete: parseFloat(valorConFlete) || 0,
       });
-      console.log(data);
       toast.success('Registro exitoso', {
         position: toast.POSITION.TOP_CENTER,
         autoClose: 3000,
