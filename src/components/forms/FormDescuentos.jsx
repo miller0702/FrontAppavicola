@@ -2,22 +2,21 @@ import React, { useState, useEffect } from 'react';
 import clienteMongoAxios from '../../config/clienteMongoAxios';
 import { generarNumeroAleatorio } from '../../util/herreamientas';
 import { Button, TextField } from '@mui/material';
-import { FaCalendar, FaUser, FaPlus, FaTrash, FaSortNumericDown, FaBox, FaDollarSign, FaThList, FaCreditCard } from 'react-icons/fa';
+import { FaCalendar, FaUser, FaPlus, FaTrash, FaSortNumericDown, FaBox, FaDollarSign, FaThList, FaCreditCard, FaQuestion } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
-export default function FormFactura() {
+export default function FormDescuentos() {
   const { usuario } = useAuth();
   const [clientes, setClientes] = useState([]);
   const [selectedClienteId, setSelectedClienteId] = useState('');
   const [lotes, setLotes] = useState([]);
   const [selectedLoteId, setSelectedLoteId] = useState('');
-  const [metodosPago, setMetodosPago] = useState([]);
-  const [selectedMetodoPago, setSelectedMetodoPago] = useState('');
-  const [valor, setValor] = useState();
+  const [descripcion, setDescripcion] = useState('');
+  const [valor, setValor] = useState('');
   const [fecha, setFecha] = useState(null);
 
   const registrar = async () => {
@@ -27,16 +26,15 @@ export default function FormFactura() {
       const factura = {
         lote_id: selectedLoteId,
         cliente_id: selectedClienteId,
-        metodo_pago: selectedMetodoPago,
+        descripcion: descripcion,
         valor: valor,
         fecha: fecha,
         numerofactura: numeroFactura,
       };
 
-      const { data } = await clienteMongoAxios.post('/api/payment/register', factura);
-      console.log(data);
+      const { data } = await clienteMongoAxios.post('/api/discount/register', factura);
 
-      toast.success('Abono Registrada con Éxito', {
+      toast.success('Descuento Registrada con Éxito', {
         position: toast.POSITION.TOP_CENTER,
         autoClose: 3000,
         hideProgressBar: false,
@@ -49,13 +47,12 @@ export default function FormFactura() {
 
       setSelectedClienteId('');
       setSelectedLoteId('');
-      setSelectedMetodoPago('');
+      setDescripcion('');
       setValor(0);
       setFecha(null);
 
     } catch (error) {
-      console.log(error);
-      toast.error('Error al Registrar Abono', {
+      toast.error('Error al Registrar Descuento', {
         position: toast.POSITION.TOP_CENTER,
         autoClose: 3000,
         hideProgressBar: false,
@@ -83,7 +80,7 @@ export default function FormFactura() {
   useEffect(() => {
     const fetchLotes = async () => {
       try {
-        const response = await clienteMongoAxios.get('/api/lote/getAll');
+        const response = await clienteMongoAxios.get('/api/lote/getAllActive');
         setLotes(response.data);
       } catch (error) {
         console.error('Error al obtener la lista de lotes', error);
@@ -94,7 +91,7 @@ export default function FormFactura() {
 
   return (
     <>
-      <h1 className="text-title-lg font-bold">Registro de Abonos</h1>
+      <h1 className="text-title-lg font-bold">Registro de Descuentos</h1>
       <ToastContainer />
       <div>
         <label className="mb-3 block text-black dark:text-white"><FaCalendar className="inline-block mr-2" /> Fecha</label>
@@ -142,25 +139,20 @@ export default function FormFactura() {
         </select>
       </div>
       <div>
-        <label className="mb-3 block text-black dark:text-white"><FaCreditCard className="inline-block mr-2" /> Método de Pago</label>
-        <select
+        <label className="mb-3 block text-black dark:text-white"><FaQuestion className="inline-block mr-2" /> Descripción</label>
+        <input
+          type="text"
+          placeholder="Ingrese aqui la razón"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
-          value={metodosPago}
-          onChange={(e) => setSelectedMetodoPago(e.target.value)}
-        >
-          <option value="" disabled>Selecciona un Método de Pago</option>
-          
-            <option value="Transferencia">Transferencia</option>
-            <option value="Efectivo">Efectivo</option>
-            <option value="Otro">Otro Pago</option>
-            
-        </select>
+          value={descripcion}
+          onChange={(e) => setDescripcion(parseFloat(e.target.value))}
+        />
       </div>
       <div className="mb-4">
-        <label className="mb-3 block text-black dark:text-white"><FaSortNumericDown className="inline-block mr-2" /> Valor del Abono</label>
+        <label className="mb-3 block text-black dark:text-white"><FaSortNumericDown className="inline-block mr-2" /> Valor del Descuento</label>
         <input
           type="number"
-          placeholder="Ingrese el valor abonado"
+          placeholder="Ingrese el valor del descuento"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={valor}
           onChange={(e) => setValor(parseFloat(e.target.value))}

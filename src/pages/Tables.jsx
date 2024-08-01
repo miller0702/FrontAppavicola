@@ -11,6 +11,7 @@ import TablesProveedores from "../components/tables/TableProveedores";
 import TablesAbonos from "../components/tables/TableAbonos";
 import TablesUsuarios from "../components/tables/TableUsuarios";
 import useAuth from "../hooks/useAuth"; // Asegúrate de tener el hook de autenticación
+import TablesDescuentos from "../components/tables/TableDescuentos";
 
 const datos = {
   "1": <TablesLote />,
@@ -22,7 +23,8 @@ const datos = {
   "7": <TablesProveedores />,
   "8": <TablesFacturas />,
   "9": <TablesAbonos />,
-  "10": <TablesUsuarios />,
+  "10": <TablesDescuentos />,
+  "11": <TablesUsuarios />,
 };
 
 const Tables = () => {
@@ -40,7 +42,8 @@ const Tables = () => {
         { value: "7", label: "Proveedores" },
         { value: "8", label: "Facturas" },
         { value: "9", label: "Abonos" },
-        { value: "10", label: "Usuarios" },
+        { value: "10", label: "Descuentos" },
+        { value: "11", label: "Usuarios" },
       ]
     : [
         { value: "8", label: "Facturas" },

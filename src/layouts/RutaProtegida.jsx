@@ -3,12 +3,13 @@ import { Outlet, Navigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import Sidebar from "../components/Sidebar.jsx";
 import Header from "../components/Header";
+import Loader from "../components/Loader.jsx"
 
 const RutaProtegida = () => {
   const { auth, cargando, usuario } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (cargando) return "Cargando...";
+  if (cargando) return <Loader />;
 
   return (
     <>

@@ -10,8 +10,8 @@ import { TextField } from '@mui/material';
 import { format } from 'date-fns';
 
 export default function FormMortalidad() {
-  const [cantidadmacho, setCantidadmacho] = useState(0);
-  const [cantidadhembra, setCantidadhembra] = useState(0);
+  const [cantidadmacho, setCantidadmacho] = useState();
+  const [cantidadhembra, setCantidadhembra] = useState();
   const [fecha, setFecha] = useState(null);
   const [lotes, setLotes] = useState([]);
   const [selectedLoteId, setSelectedLoteId] = useState('');

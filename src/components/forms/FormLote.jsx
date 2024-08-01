@@ -14,7 +14,7 @@ export default function FormLote() {
   const [selectedProveedorId, setSelectedProveedorId] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [cantidadAves, setCantidadAves] = useState('');
-  const [precio, setPrecio] = useState(0);
+  const [precio, setPrecio] = useState();
   const [fechaLlegada, setFechaLlegada] = useState(null);
 
   useEffect(() => {

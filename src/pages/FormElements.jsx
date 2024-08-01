@@ -10,6 +10,7 @@ import FormCompraAlimento from "../components/forms/FormCompraAlimento";
 import FormProveedores from "../components/forms/FormProveedores";
 import FormAbonos from "../components/forms/FormAbonos";
 import FormUsuarios from "../components/forms/FormUsuarios";
+import FormDescuentos from "../components/forms/FormDescuentos";
 
 const componente = {
   "1": <FormLote />,
@@ -21,7 +22,8 @@ const componente = {
   "7": <FormProveedores />,
   "8": <FormFactura />,
   "9": <FormAbonos />,
-  "10": <FormUsuarios />,
+  "10": <FormDescuentos />,
+  "11": <FormUsuarios />,
 }
 
 const FormElements = () => {
@@ -59,6 +61,9 @@ const FormElements = () => {
       break;
     case "10":
         setTipo("10")
+        break;
+    case "11":
+        setTipo("11")
         break;
 
     default:
@@ -124,7 +129,8 @@ const FormElements = () => {
                     <option value="7">Proveedores</option>
                     <option value="8">Facturas</option>
                     <option value="9">Abonos</option>
-                    <option value="10">Usuarios</option>
+                    <option value="10">Descuentos</option>
+                    <option value="11">Usuarios</option>
                   </select>
                   <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
                     <svg

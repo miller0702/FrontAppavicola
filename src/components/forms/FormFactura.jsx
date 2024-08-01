@@ -14,10 +14,10 @@ export default function FormFactura() {
   const [selectedClienteId, setSelectedClienteId] = useState('');
   const [lotes, setLotes] = useState([]);
   const [selectedLoteId, setSelectedLoteId] = useState('');
-  const [cantidadAves, setCantidadAves] = useState(0);
+  const [cantidadAves, setCantidadAves] = useState();
   const [canastasVacias, setCanastasVacias] = useState([]);
   const [canastasLlenas, setCanastasLlenas] = useState([]);
-  const [precioKilo, setPrecioKilo] = useState(0);
+  const [precioKilo, setPrecioKilo] = useState();
   const [fecha, setFecha] = useState(null);
   const [nuevaCanastaVacia, setNuevaCanastaVacia] = useState('');
   const [nuevaCanastaLlena, setNuevaCanastaLlena] = useState('');

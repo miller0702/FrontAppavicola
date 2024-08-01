@@ -10,8 +10,8 @@ import { FaMale, FaFemale, FaCalendarAlt, FaThList } from 'react-icons/fa';
 import { format } from 'date-fns';
 
 export default function FormAlimento() {
-  const [cantidadmacho, setCantidadmacho] = useState(0);
-  const [cantidadhembra, setCantidadhembra] = useState(0);
+  const [cantidadmacho, setCantidadmacho] = useState();
+  const [cantidadhembra, setCantidadhembra] = useState();
   const [fecha, setFecha] = useState(null);
   const [lotes, setLotes] = useState([]);
   const [selectedLoteId, setSelectedLoteId] = useState('');

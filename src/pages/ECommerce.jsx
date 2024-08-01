@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from '../hooks/useAuth';
 import CardOne from "../components/cards/CardOne";
@@ -13,20 +13,26 @@ import CardNine from '../components/cards/CardNine';
 import CardTen from '../components/cards/CardTen';
 import CardEleven from '../components/cards/CardEleven';
 import ChartFive from "../components/charts/ChartFive";
+import Loader from "../components/Loader";
 
 const ECommerce = () => {
     const { usuario, cargando } = useAuth();
     const navigate = useNavigate();
+    const [loadingTimeElapsed, setLoadingTimeElapsed] = useState(false);
 
     useEffect(() => {
-        if (!usuario && !cargando) {
+        const timer = setTimeout(() => {
+            setLoadingTimeElapsed(true);
+        }, 3000);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    useEffect(() => {
+        if (!usuario && !cargando && loadingTimeElapsed) {
             navigate('/');
         }
-    }, [usuario, cargando, navigate]);
-
-    if (cargando) {
-        return <div>Cargando...</div>;
-    }
+    }, [usuario, cargando, navigate, loadingTimeElapsed]);
 
     return (
         <>

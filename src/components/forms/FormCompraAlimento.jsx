@@ -226,6 +226,7 @@ export default function FormCompraAlimento() {
         </label>
         <input
           type="number"
+          placeholder="Ingrese la cantidad de bultos"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={cantidadBultos}
           onChange={handleChangeCantidadBultos}
@@ -238,6 +239,7 @@ export default function FormCompraAlimento() {
         </label>
         <input
           type="number"
+          placeholder="Ingrese el valor por bulto"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={valorUnitario}
           onChange={handleChangeValorUnitario}
@@ -250,6 +252,7 @@ export default function FormCompraAlimento() {
         </label>
         <input
           type="number"
+           placeholder="Ingrese el valor del flete"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={valorFlete}
           onChange={handleChangeValorFlete}

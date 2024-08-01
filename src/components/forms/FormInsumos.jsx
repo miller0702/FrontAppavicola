@@ -13,7 +13,7 @@ export default function FormInsumos() {
   const [proveedores, setProveedores] = useState([]);
   const [selectedProveedorId, setSelectedProveedorId] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [precio, setPrecio] = useState(0);
+  const [precio, setPrecio] = useState();
   const [fecha, setFecha] = useState(null);
   const [lotes, setLotes] = useState([]);
   const [selectedLoteId, setSelectedLoteId] = useState('');
@@ -130,6 +130,7 @@ export default function FormInsumos() {
         <label className="mb-3 block text-black dark:text-white"><FaAudioDescription className="inline-block mr-2" /> Descripción de la Compra</label>
         <input
           type="text"
+          placeholder="Ingrese la descripción"
           className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
