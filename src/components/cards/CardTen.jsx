@@ -44,7 +44,7 @@ const CardTen = () => {
         <h4 className="font-bold text-black dark:text-white">
           Total Abonado
         </h4>
-        <h1 className="text-title-lg font-bold text-black dark:text-white" style={{ fontSize: 30 }}>
+        <h1 className="text-title-lg font-bold text-black dark:text-white" style={{ fontSize: 20 }}>
           {formatearPrecio(totalAbonos)}
         </h1>
         <span className="text-sm font-medium">Abonos al Galpón</span>

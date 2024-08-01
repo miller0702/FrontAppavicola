@@ -55,7 +55,7 @@ const CardFour = () => {
         <h4 className="font-bold text-black dark:text-white">
           Insumos y Gastos
         </h4>
-        <h1 className="text-title-lg font-bold text-black dark:text-white" style={{ fontSize: 30 }}>
+        <h1 className="text-title-lg font-bold text-black dark:text-white" style={{ fontSize: 20 }}>
         $ {totalGastos.toLocaleString("es-ES", { minimumFractionDigits: 0 })}
         </h1>
         <span className="text-sm font-medium">Valor Total de Gastos</span>

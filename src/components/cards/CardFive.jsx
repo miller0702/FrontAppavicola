@@ -36,7 +36,7 @@ const CardFive = () => {
         <h4 className="font-bold text-black dark:text-white">
           Compra Alimento
         </h4>
-        <h1 className="text-title-lg font-bold text-black dark:text-white" style={{ fontSize: 30 }}>
+        <h1 className="text-title-lg font-bold text-black dark:text-white" style={{ fontSize: 20 }}>
         $ {totalCompras.toLocaleString("es-ES", { minimumFractionDigits: 0 })}
         </h1>
         <span className="text-sm font-medium">Valor en Alimento Comprado</span>

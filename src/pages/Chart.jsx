@@ -145,7 +145,7 @@ const Chart = () => {
         </button>
       </div>
 
-      <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+      <div className="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <CardOne />
         <CardTwo />
         <CardThree />
