@@ -50,6 +50,7 @@ const Chart = () => {
       '4': 'INSUMOS Y GASTOS',
       '5': 'VENTAS',
       '6': 'ABONOS',
+      '7': 'CLIENTES',
     };
     setReportTypeName(reportTypeNames[selectedReportType]);
   }, [selectedReportType]);
@@ -133,6 +134,7 @@ const Chart = () => {
           <option value='4'>Insumos y Gastos</option>
           <option value='5'>Ventas</option>
           <option value='6'>Abonos</option>
+          <option value='7'>Clientes</option>
         </select>
 
         <button
