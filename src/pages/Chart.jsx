@@ -19,7 +19,8 @@ const Chart = () => {
   const [selectedLoteId, setSelectedLoteId] = useState('');
   const [selectedLoteDescripcion, setSelectedLoteDescripcion] = useState('');
   const [selectedReportType, setSelectedReportType] = useState('');
-  
+  const [reportTypeName, setReportTypeName] = useState('Reporte General');
+
   useEffect(() => {
     const fetchLotes = async () => {
       try {
@@ -40,6 +41,19 @@ const Chart = () => {
     }
   }, [selectedLoteId, lotes]);
 
+  useEffect(() => {
+    const reportTypeNames = {
+      '': 'GENERAL',
+      '1': 'COMPRAS DE ALIMENTO',
+      '2': 'CONSUMO DE ALIMENTO',
+      '3': 'MORTALIDAD AVES',
+      '4': 'INSUMOS Y GASTOS',
+      '5': 'VENTAS',
+      '6': 'ABONOS',
+    };
+    setReportTypeName(reportTypeNames[selectedReportType]);
+  }, [selectedReportType]);
+
   const handleLoteChange = (event) => {
     setSelectedLoteId(event.target.value);
   };
@@ -53,27 +67,25 @@ const Chart = () => {
       alert('Por favor, selecciona un lote.');
       return;
     }
-  
+
     try {
       const endpoint = selectedReportType === ''
         ? `/api/lote/${selectedLoteId}/invoice`
         : `/api/lote/${selectedLoteId}/reporte?tipo=${selectedReportType}`;
-  
+
       const response = await clienteMongoAxios.get(endpoint, {
         responseType: 'blob',
       });
-  
+
       if (response.status !== 200) {
         throw new Error(`Error: ${response.statusText}`);
       }
-  
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      const fileName = selectedReportType === ''
-        ? `REPORTE_GENERAL_${selectedLoteDescripcion || 'DESCONOCIDO'}.pdf`
-        : `REPORTE_${selectedReportType}_${selectedLoteDescripcion || 'DESCONOCIDO'}.pdf`;
-      link.setAttribute('download', fileName.replace(/\s+/g, '_'));
+      const fileName = `REPORTE_${reportTypeName.replace(/\s+/g, '_')}_${selectedLoteDescripcion || 'DESCONOCIDO'}.pdf`;
+      link.setAttribute('download', fileName);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -81,7 +93,6 @@ const Chart = () => {
       console.error('Error al descargar el reporte:', error);
     }
   };
-  
 
   return (
     <>
@@ -119,9 +130,9 @@ const Chart = () => {
           <option value='1'>Compras de Alimento</option>
           <option value='2'>Consumo de Alimento</option>
           <option value='3'>Mortalidad</option>
-          {/* <option value='4'>Insumos y Gastos</option>
+          <option value='4'>Insumos y Gastos</option>
           <option value='5'>Ventas</option>
-          <option value='6'>Abonos</option> */}
+          <option value='6'>Abonos</option>
         </select>
 
         <button
