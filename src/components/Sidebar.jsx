@@ -15,6 +15,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const sidebar = useRef(null);
 
   const storedSidebarExpanded = localStorage.getItem("sidebar-expanded");
+  
   const [sidebarExpanded, setSidebarExpanded] = useState(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === "true"
   );
@@ -62,12 +63,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { to: "/", icon: <FaSignOutAlt style={{ fontSize: "20px" }}/>, label: "Cerrar Sesión", action: logout , roles: [1, 2, 3]},
   ];
 
-  console.log('Usuario:', usuario);
-
   const userRole = usuario && typeof usuario.rol === 'number' ? usuario.rol : null;
   
   const filteredMenuItems = menuItems.filter(item => {
-    console.log('Roles del ítem:', item.roles);
     return Array.isArray(item.roles) && userRole && item.roles.includes(Number(userRole));
   });
 

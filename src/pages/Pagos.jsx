@@ -16,14 +16,11 @@ export default function Pagos() {
     obtenerFirma()
   },[factura])
 
-
-
   const handleSubmit = async (e) => {
 
 
     try {
       const {data} = await clienteMongoAxios.post('/api/pagos/factura', {numerofactura: nFactura});
-      console.log(data)
       setFactura({
         numeroFactura: data.factura.numerofactura,
         fecha: data.factura.fecha,
@@ -42,7 +39,6 @@ export default function Pagos() {
     }
   };
 
-
   const obtenerFirma = async () => {
 
     const {data} = await clienteMongoAxios.post('/api/pagos/obtenerFirma', {
@@ -51,8 +47,6 @@ export default function Pagos() {
     })
     setFirma(data.encriptado)
   }
-
-
 
   return (
     <div className="flex h-full">
